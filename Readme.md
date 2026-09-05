@@ -1,61 +1,102 @@
-# EcoShield backend
+# EcoShield API
 
-EcoShield is a Vercel-compatible FastAPI backend for India-focused environmental observations and explainable environmental risk scores. It contains no frontend and no persistent worker process. Location APIs and flood AOIs are restricted to the approximate India bounding box: 6.5–37.5°N, 68–97.5°E.
+EcoShield is the backend for an environmental monitoring project focused on India. It brings together weather, rainfall, air quality, active fire, and flood information and exposes the results through a small REST API.
 
-## Local development
+The API is built with FastAPI and can run locally with Uvicorn or deploy directly to Vercel. The frontend is maintained separately.
+
+## Running locally
+
+Create a virtual environment and install the dependencies:
 
 ```bash
 python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 cp .env.example .env
+```
+
+Start the development server:
+
+```bash
 uvicorn main:app --reload
 ```
 
-Interactive OpenAPI documentation is available at `http://localhost:8000/docs` and `/redoc`. Run tests with `pytest`.
+Once it is running, the API documentation is available at:
 
-## API
+- http://localhost:8000/docs
+- http://localhost:8000/redoc
 
-All responses use `{success, data, meta}` on success and `{success, error}` on handled errors.
+## India coverage
 
-`GET /api/health`
+The location-based endpoints accept coordinates within the following approximate bounding box:
 
-`GET /api/weather?latitude=28.61&longitude=77.21&forecast_days=7` (India only)
+- Latitude: 6.5°N to 37.5°N
+- Longitude: 68°E to 97.5°E
 
-`GET /api/rainfall?latitude=28.61&longitude=77.21` (India only)
+This keeps the project focused on India. Pollution data comes from India’s CPCB/data.gov.in service, and NASA FIRMS hotspot requests default to India.
 
-`GET /api/fire/hotspots?area=india&days=1`
+## Endpoints
 
-`GET /api/fire/risk?temperature=38&humidity=25&wind=20&hotspots=3`
+All successful responses follow this general structure:
 
-`GET /api/pollution` and `GET /api/pollution/risk?aqi=180`
+```json
+{
+  "success": true,
+  "data": {},
+  "meta": {}
+}
+```
 
-`GET /api/flood/risk?rainfall_24h=120&forecast_rainfall=80`
+Available endpoints include:
 
-`POST /api/flood/detect` with a GeoJSON Polygon or MultiPolygon and before/after date windows. When configured, this submits a Sentinel-1 GRD change-detection task to Earth Engine and returns its task ID.
+```text
+GET  /api/health
+GET  /api/weather?latitude=28.61&longitude=77.21&forecast_days=7
+GET  /api/rainfall?latitude=28.61&longitude=77.21
+GET  /api/fire/hotspots?area=india&days=1
+GET  /api/fire/risk?temperature=38&humidity=25&wind=20&hotspots=3
+GET  /api/pollution
+GET  /api/pollution/risk?aqi=180
+GET  /api/flood/risk?rainfall_24h=120&forecast_rainfall=80
+POST /api/flood/detect
+GET  /api/risk?flood=78&fire=41&pollution=63
+GET  /api/alerts?risk=80&type=flood&location=Delhi
+GET  /api/locations
+GET  /api/historical?latitude=28.61&longitude=77.21&start=2025-01-01&end=2025-01-31
+```
 
-`GET /api/risk?flood=78&fire=41&pollution=63`
+The flood detection request accepts a GeoJSON Polygon or MultiPolygon along with before and after date ranges. It submits a Sentinel-1 change-detection job to Google Earth Engine and returns the task ID when Earth Engine is configured.
 
-`GET /api/alerts?risk=80&type=flood&location=Delhi`
+## Data providers and configuration
 
-`GET /api/locations`
+Copy `.env.example` to `.env` for local development. The following services are used:
 
-`GET /api/historical?latitude=28.61&longitude=77.21&start=2025-01-01&end=2025-01-31`
+- Open-Meteo: weather and rainfall; no key is needed for normal non-commercial use.
+- NASA FIRMS: active fire hotspots; requires `NASA_FIRMS_MAP_KEY`.
+- data.gov.in/CPCB: air quality observations; requires `DATA_GOV_API_KEY`.
+- NASA POWER: historical climate data; no key is normally needed.
+- Google Earth Engine: Sentinel-1 flood detection; requires `GEE_PROJECT_ID`, `GEE_SERVICE_ACCOUNT_EMAIL`, and `GEE_PRIVATE_KEY`.
 
-## Vercel deployment
+`DATABASE_URL` is reserved for the managed PostgreSQL database used by the production version. The current API does not depend on local SQLite or local file storage.
 
-Vercel detects `main.py` as a Python ASGI Function. No Docker, separate FastAPI server, database worker, or cron process is required. Connect this Git repository in Vercel, set the project root to the repository root, configure the environment variables below, and deploy. Verify the deployment with `/api/health`.
+Set `CORS_ORIGINS` to the URL of the React frontend. Multiple origins can be separated with commas. Risk weights can be adjusted with `RISK_FLOOD_WEIGHT`, `RISK_FIRE_WEIGHT`, and `RISK_POLLUTION_WEIGHT`.
 
-Required provider setup:
+## Deploying to Vercel
 
-1. Open-Meteo requires no API key for normal non-commercial usage.
-2. Create a NASA FIRMS account and set `NASA_FIRMS_MAP_KEY`.
-3. Create a data.gov.in account/API key and set `DATA_GOV_API_KEY`. The CPCB adapter preserves unavailable values as null.
-4. Create a managed PostgreSQL/Neon database and set `DATABASE_URL` when persistence is added. The initial serverless API does not depend on local SQLite or local files.
-5. For flood detection, create a Google Cloud service account with Earth Engine access. Set `GEE_PROJECT_ID`, `GEE_SERVICE_ACCOUNT_EMAIL`, and `GEE_PRIVATE_KEY` as Vercel secrets. Store the private key only as an environment variable; never commit it.
+Connect the repository to Vercel and set the environment variables in the project settings. Vercel detects `main.py` as the FastAPI entry point, so no separate backend server is needed.
 
-Set `CORS_ORIGINS` to the deployed React origin(s), comma-separated. Do not use `*` in production. Risk weights are configurable through `RISK_FLOOD_WEIGHT`, `RISK_FIRE_WEIGHT`, and `RISK_POLLUTION_WEIGHT`.
+After deployment, check the following URL:
 
-## Limitations
+```text
+https://your-project.vercel.app/api/health
+```
 
-Flood detection is a hackathon-level Sentinel-1 SAR before/after ratio heuristic. It is asynchronous, requires Earth Engine credentials and the optional `earthengine-api` dependency, and is not a scientific certification or official warning system. Provider outages are returned as structured errors and do not require local persistence.
+The Earth Engine dependency is optional. Install and configure it only when `/api/flood/detect` is needed. Flood detection is intended for the hackathon and should not be treated as an official warning or scientifically certified flood product.
+
+## Tests
+
+Run the test suite with:
+
+```bash
+pytest
+```
