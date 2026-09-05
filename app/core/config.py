@@ -10,6 +10,8 @@ class Settings(BaseSettings):
     gee_project_id: str | None = None
     gee_service_account_email: str | None = None
     gee_private_key: str | None = None
+    gee_export_bucket: str | None = None
+    gee_export_folder: str = "EcoShield"
     gemini_api_key: str | None = None
     gemini_model: str = "gemini-3.7-flash"
     gemini_base_url: str = "https://generativelanguage.googleapis.com/v1beta"

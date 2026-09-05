@@ -65,7 +65,9 @@ GET  /api/locations
 GET  /api/historical?latitude=28.61&longitude=77.21&start=2025-01-01&end=2025-01-31
 ```
 
-The flood detection request accepts a GeoJSON Polygon or MultiPolygon along with before and after date ranges. It submits a Sentinel-1 change-detection job to Google Earth Engine and returns the task ID when Earth Engine is configured.
+The flood detection request accepts a GeoJSON Polygon or MultiPolygon along with before and after date ranges. It submits a Sentinel-1 change-detection job to Google Earth Engine and returns the task ID. Poll it with `GET /api/flood/tasks/{task_id}`.
+
+`POST /api/fire/earth-engine` analyzes MODIS `MOD14A1.061` fire-mask confidence and maximum FRP for an India AOI and date range. NASA FIRMS remains the near-real-time hotspot feed.
 
 ## Data providers and configuration
 
@@ -75,7 +77,7 @@ Copy `.env.example` to `.env` for local development. The following services are 
 - NASA FIRMS: active fire hotspots; requires `NASA_FIRMS_MAP_KEY`.
 - data.gov.in/CPCB: air quality observations; requires `DATA_GOV_API_KEY`.
 - NASA POWER: historical climate data; no key is normally needed.
-- Google Earth Engine: Sentinel-1 flood detection; requires `GEE_PROJECT_ID`, `GEE_SERVICE_ACCOUNT_EMAIL`, and `GEE_PRIVATE_KEY`.
+- Google Earth Engine: Sentinel-1 flood detection and MODIS fire analysis; requires `GEE_PROJECT_ID`, `GEE_SERVICE_ACCOUNT_EMAIL`, `GEE_PRIVATE_KEY`, and either Google Drive access or `GEE_EXPORT_BUCKET`.
 
 `DATABASE_URL` is reserved for the managed PostgreSQL database used by the production version. The current API does not depend on local SQLite or local file storage.
 
@@ -103,7 +105,7 @@ After deployment, check the following URL:
 https://your-project.vercel.app/api/health
 ```
 
-The Earth Engine dependency is optional. Install and configure it only when `/api/flood/detect` is needed. Flood detection is intended for the hackathon and should not be treated as an official warning or scientifically certified flood product.
+Earth Engine features require the `earthengine-api` dependency and valid credentials. Flood detection is intended for the hackathon and should not be treated as an official warning or scientifically certified flood product.
 
 ## Tests
 

@@ -18,6 +18,13 @@ class FloodDetectRequest(BaseModel):
         if start and value < start: raise ValueError("before_end must be on or after before_start")
         return value
 
+    @field_validator("after_end")
+    @classmethod
+    def after_order(cls, value, info):
+        start = info.data.get("after_start")
+        if start and value < start: raise ValueError("after_end must be on or after after_start")
+        return value
+
 class AIBriefingRequest(BaseModel):
     location: str = "India"
     weather: dict = {}
@@ -26,9 +33,8 @@ class AIBriefingRequest(BaseModel):
     pollution: dict = {}
     risk: dict = {}
 
-    @field_validator("after_end")
-    @classmethod
-    def after_order(cls, value, info):
-        start = info.data.get("after_start")
-        if start and value < start: raise ValueError("after_end must be on or after after_start")
-        return value
+class FireAnalysisRequest(BaseModel):
+    geometry: dict[str, Any]
+    start: date
+    end: date
+    min_confidence: Literal["low", "nominal", "high"] = "nominal"

@@ -6,7 +6,7 @@ from app.core.responses import error, success
 from app.integrations import open_meteo, nasa_firms, cpcb, nasa_power, earth_engine
 from app.ai import gemini
 from app.risk import flood_risk, fire_risk, pollution_risk, overall_risk
-from app.schemas import FloodDetectRequest, AIBriefingRequest
+from app.schemas import FloodDetectRequest, AIBriefingRequest, FireAnalysisRequest
 
 router = APIRouter()
 
@@ -109,6 +109,20 @@ async def flood_detect(request: FloodDetectRequest):
         raise HTTPException(422, detail=error("VALIDATION_ERROR", "geometry must be valid GeoJSON Polygon, MultiPolygon, Feature, or FeatureCollection"))
     _india_geometry(request.geometry)
     try: return success(earth_engine.submit_flood_job(request), "Google Earth Engine / Sentinel-1")
+    except Exception as exc: return provider_error(exc)
+
+@router.get("/flood/tasks/{task_id}", tags=["flood"], summary="Poll an Earth Engine flood export task")
+async def flood_task(task_id: str):
+    try: return success(earth_engine.task_status(task_id), "Google Earth Engine")
+    except Exception as exc: return provider_error(exc)
+
+@router.post("/fire/earth-engine", tags=["fire"], summary="Analyze MODIS fire-mask and FRP pixels for an India AOI")
+async def earth_engine_fire(request: FireAnalysisRequest):
+    if request.geometry.get("type") not in {"Polygon", "MultiPolygon", "Feature", "FeatureCollection"}:
+        raise HTTPException(422, detail=error("VALIDATION_ERROR", "geometry must be valid GeoJSON Polygon, MultiPolygon, Feature, or FeatureCollection"))
+    _india_geometry(request.geometry)
+    if request.end < request.start: raise HTTPException(422, detail=error("VALIDATION_ERROR", "end must be on or after start"))
+    try: return success(earth_engine.fire_analysis(request), "Google Earth Engine / MODIS MOD14A1.061")
     except Exception as exc: return provider_error(exc)
 
 @router.get("/risk", tags=["risk"], summary="Combine flood, fire, and pollution risk")
