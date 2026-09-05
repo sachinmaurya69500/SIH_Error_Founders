@@ -18,6 +18,14 @@ class FloodDetectRequest(BaseModel):
         if start and value < start: raise ValueError("before_end must be on or after before_start")
         return value
 
+class AIBriefingRequest(BaseModel):
+    location: str = "India"
+    weather: dict = {}
+    rainfall: dict = {}
+    fire: dict = {}
+    pollution: dict = {}
+    risk: dict = {}
+
     @field_validator("after_end")
     @classmethod
     def after_order(cls, value, info):

@@ -4,10 +4,13 @@ from fastapi import APIRouter, HTTPException, Query
 from pydantic import ValidationError
 from app.core.responses import error, success
 from app.integrations import open_meteo, nasa_firms, cpcb, nasa_power, earth_engine
+from app.ai import gemini
 from app.risk import flood_risk, fire_risk, pollution_risk, overall_risk
-from app.schemas import FloodDetectRequest
+from app.schemas import FloodDetectRequest, AIBriefingRequest
 
 router = APIRouter()
+
+INDIA_STATES = [{"name": "Andhra Pradesh", "latitude": 15.91, "longitude": 79.74}, {"name": "Arunachal Pradesh", "latitude": 28.22, "longitude": 94.72}, {"name": "Assam", "latitude": 26.20, "longitude": 92.94}, {"name": "Bihar", "latitude": 25.10, "longitude": 85.31}, {"name": "Chhattisgarh", "latitude": 21.28, "longitude": 81.86}, {"name": "Goa", "latitude": 15.30, "longitude": 74.12}, {"name": "Gujarat", "latitude": 22.26, "longitude": 71.19}, {"name": "Haryana", "latitude": 29.06, "longitude": 76.08}, {"name": "Himachal Pradesh", "latitude": 31.10, "longitude": 77.17}, {"name": "Jharkhand", "latitude": 23.61, "longitude": 85.28}, {"name": "Karnataka", "latitude": 15.32, "longitude": 75.71}, {"name": "Kerala", "latitude": 10.85, "longitude": 76.27}, {"name": "Madhya Pradesh", "latitude": 22.97, "longitude": 78.65}, {"name": "Maharashtra", "latitude": 19.75, "longitude": 75.71}, {"name": "Manipur", "latitude": 24.66, "longitude": 93.91}, {"name": "Meghalaya", "latitude": 25.46, "longitude": 91.36}, {"name": "Mizoram", "latitude": 23.16, "longitude": 92.94}, {"name": "Nagaland", "latitude": 26.16, "longitude": 94.56}, {"name": "Odisha", "latitude": 20.94, "longitude": 84.80}, {"name": "Punjab", "latitude": 31.15, "longitude": 75.34}, {"name": "Rajasthan", "latitude": 27.02, "longitude": 74.22}, {"name": "Sikkim", "latitude": 27.53, "longitude": 88.51}, {"name": "Tamil Nadu", "latitude": 11.12, "longitude": 78.65}, {"name": "Telangana", "latitude": 18.11, "longitude": 79.01}, {"name": "Tripura", "latitude": 23.94, "longitude": 91.99}, {"name": "Uttar Pradesh", "latitude": 26.85, "longitude": 80.91}, {"name": "Uttarakhand", "latitude": 30.06, "longitude": 79.02}, {"name": "West Bengal", "latitude": 22.99, "longitude": 87.85}, {"name": "Delhi", "latitude": 28.61, "longitude": 77.21}, {"name": "Jammu and Kashmir", "latitude": 33.78, "longitude": 76.58}, {"name": "Ladakh", "latitude": 34.15, "longitude": 77.58}, {"name": "Puducherry", "latitude": 11.94, "longitude": 79.81}]
 
 def provider_error(exc: Exception):
     return error("UPSTREAM_API_ERROR", str(exc))
@@ -39,12 +42,32 @@ def _india_geometry(geometry: dict[str, Any]) -> None:
 async def health():
     return success({"status": "ok", "environment": __import__("app.core.config", fromlist=["settings"]).settings.app_env}, "EcoShield")
 
+@router.post("/ai/briefing", tags=["ai"], summary="Generate a Gemini briefing from verified environmental observations")
+async def ai_briefing(request: AIBriefingRequest):
+    try:
+        text = await gemini.environmental_briefing(request.model_dump())
+        return success({"briefing": text, "generated": True, "model": __import__("app.core.config", fromlist=["settings"]).settings.gemini_model}, "Google Gemini")
+    except Exception as exc: return provider_error(exc)
+
+@router.post("/ai/ask", tags=["ai"], summary="Ask Gemini about the supplied verified environmental data")
+async def ai_ask(question: str, request: AIBriefingRequest):
+    if len(question.strip()) < 3: raise HTTPException(422, detail=error("VALIDATION_ERROR", "question must contain at least 3 characters"))
+    try:
+        text = await gemini.generate("Answer this question about India environmental conditions using only the verified context. If the context is insufficient, say so. Question: " + question + "\nContext: " + str(request.model_dump()))
+        return success({"answer": text, "generated": True}, "Google Gemini")
+    except Exception as exc: return provider_error(exc)
+
 @router.get("/weather", tags=["weather"], summary="Get normalized current and forecast weather")
 async def weather(latitude: float = Query(..., ge=-90, le=90), longitude: float = Query(..., ge=-180, le=180), timezone: str = "auto", forecast_days: int = Query(7, ge=1, le=16)):
     _coordinates(latitude, longitude)
     try:
         payload = await open_meteo.forecast(latitude, longitude, timezone, forecast_days)
         return success({"coordinates": {"latitude": latitude, "longitude": longitude}, "current": payload.get("current"), "hourly": payload.get("hourly"), "daily": payload.get("daily"), "units": {"current": payload.get("current_units"), "hourly": payload.get("hourly_units"), "daily": payload.get("daily_units")}}, "Open-Meteo")
+    except Exception as exc: return provider_error(exc)
+
+@router.get("/weather/states", tags=["weather"], summary="Get current weather and three-day forecasts for Indian states and territories")
+async def state_weather():
+    try: return success(await open_meteo.state_forecasts(INDIA_STATES), "Open-Meteo")
     except Exception as exc: return provider_error(exc)
 
 @router.get("/rainfall", tags=["weather"], summary="Get rainfall observations and forecast")
