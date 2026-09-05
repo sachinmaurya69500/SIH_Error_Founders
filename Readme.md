@@ -83,7 +83,19 @@ Set `CORS_ORIGINS` to the URL of the React frontend. Multiple origins can be sep
 
 ## Deploying to Vercel
 
-Connect the repository to Vercel and set the environment variables in the project settings. Vercel detects `main.py` as the FastAPI entry point, so no separate backend server is needed.
+The repository contains both applications. Vercel builds the React app from `frontend/` and exposes the FastAPI application from `main.py`, so the frontend and backend share one deployment and the frontend can call `/api/...` without a separate server URL.
+
+For local frontend development:
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+The frontend uses `/api` by default. To point it at a separately running backend during development, copy `frontend/.env.example` to `frontend/.env` and set `VITE_API_BASE_URL=http://localhost:8000/api`.
+
+Connect the repository to Vercel and set the environment variables in the project settings. The included `vercel.json` runs the frontend build and publishes `frontend/dist`, while Vercel detects `main.py` as the FastAPI entry point.
 
 After deployment, check the following URL:
 

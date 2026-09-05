@@ -8,3 +8,5 @@ __pycache__/
 htmlcov/
 .mypy_cache/
 .DS_Store
+frontend/node_modules/
+frontend/dist/
