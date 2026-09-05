@@ -1,0 +1,130 @@
+<!-- ================= LIVE WEATHER MAP ================= -->
+
+<section id="live-map-page" class="page">
+
+    <div class="topbar">
+
+        <div class="location">
+            Weather monitoring<br>
+            <strong>🌦️ Live Weather Map — India</strong>
+        </div>
+
+        <div class="top-actions">
+            <div class="pill">● LIVE WEATHER</div>
+            <div class="pill" id="mapTime">--:-- IST</div>
+        </div>
+
+    </div>
+
+
+    <div class="map-header">
+
+        <div>
+            <h1>Live Weather Intelligence</h1>
+
+            <p>
+                Monitor temperature, rainfall, storms and extreme
+                weather conditions across India.
+            </p>
+        </div>
+
+
+        <div class="map-filters">
+
+            <button
+                class="map-filter selected"
+                onclick="filterWeather('all', this)">
+                All
+            </button>
+
+            <button
+                class="map-filter"
+                onclick="filterWeather('rain', this)">
+                🌧 Rain
+            </button>
+
+            <button
+                class="map-filter"
+                onclick="filterWeather('storm', this)">
+                ⛈ Storm
+            </button>
+
+            <button
+                class="map-filter"
+                onclick="filterWeather('hot', this)">
+                🌡 Heat
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <div class="big-map-container">
+
+        <div id="bigMap"></div>
+
+
+        <!-- WEATHER INFORMATION -->
+
+        <div class="map-info">
+
+            <h3>Weather Overview</h3>
+
+            <div>
+                Active weather events
+                <strong id="weatherEvents">6</strong>
+            </div>
+
+            <div>
+                Heavy Rain
+                <strong>2</strong>
+            </div>
+
+            <div>
+                Thunderstorms
+                <strong>2</strong>
+            </div>
+
+            <div>
+                Heat Alerts
+                <strong>2</strong>
+            </div>
+
+            <div>
+                Last Updated
+                <strong>2 min</strong>
+            </div>
+
+        </div>
+
+
+        <!-- LEGEND -->
+
+        <div class="map-legend">
+
+            <div>
+                <span class="rain-dot"></span>
+                Heavy Rain
+            </div>
+
+            <div>
+                <span class="storm-dot"></span>
+                Thunderstorm
+            </div>
+
+            <div>
+                <span class="heat-dot"></span>
+                Heat Alert
+            </div>
+
+            <div>
+                <span class="normal-dot"></span>
+                Normal
+            </div>
+
+        </div>
+
+    </div>
+
+</section>

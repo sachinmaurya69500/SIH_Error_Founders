@@ -1,0 +1,28 @@
+/* ================= WEATHER MAP ================= */
+
+.rain-dot {
+    background: #3498db;
+}
+
+.storm-dot {
+    background: #9b59b6;
+}
+
+.heat-dot {
+    background: #e67e22;
+}
+
+.normal-dot {
+    background: #2ecc71;
+}
+
+.weather-marker {
+    width: 18px;
+    height: 18px;
+
+    border-radius: 50%;
+
+    border: 3px solid white;
+
+    box-shadow: 0 0 18px currentColor;
+}

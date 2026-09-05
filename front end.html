@@ -1,767 +1,2511 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>EcoShield AI — Environmental Intelligence</title>
+
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
+
+<title>EcoShield AI</title>
+
+
+<!-- LEAFLET MAP -->
+
+<link
+rel="stylesheet"
+href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+/>
+
 
 <style>
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-        font-family: Inter, Arial, sans-serif;
-    }
 
-    body {
-        background: #08110f;
-        color: #eefaf5;
-        min-height: 100vh;
-    }
+/* =====================================================
+   GLOBAL
+===================================================== */
 
-    .app {
-        display: flex;
-        min-height: 100vh;
-    }
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 
-    /* SIDEBAR */
+    font-family:
+        Inter,
+        Arial,
+        sans-serif;
+}
+
+
+body {
+
+    background: #08110f;
+
+    color: #eefaf5;
+
+    min-height: 100vh;
+
+}
+
+
+/* =====================================================
+   APP
+===================================================== */
+
+.app {
+
+    display: flex;
+
+    min-height: 100vh;
+
+}
+
+
+/* =====================================================
+   SIDEBAR
+===================================================== */
+
+.sidebar {
+
+    width: 240px;
+
+    background: #0b1714;
+
+    border-right:
+        1px solid #1b302b;
+
+    padding: 25px 18px;
+
+    position: fixed;
+
+    height: 100vh;
+
+    z-index: 1000;
+
+}
+
+
+.logo {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+
+    margin-bottom: 45px;
+
+}
+
+
+.logo-icon {
+
+    width: 38px;
+
+    height: 38px;
+
+    background: #1ed760;
+
+    color: #06100d;
+
+    border-radius: 11px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    font-size: 20px;
+
+    font-weight: bold;
+
+}
+
+
+.logo h2 {
+
+    font-size: 18px;
+
+}
+
+
+.logo span {
+
+    color: #1ed760;
+
+}
+
+
+.nav-title {
+
+    color: #657c75;
+
+    font-size: 11px;
+
+    text-transform: uppercase;
+
+    letter-spacing: 1.5px;
+
+    margin:
+        20px
+        12px
+        10px;
+
+}
+
+
+.nav-item {
+
+    padding: 12px 13px;
+
+    border-radius: 10px;
+
+    margin: 5px 0;
+
+    color: #657c75;
+
+    cursor: pointer;
+
+    transition: .2s;
+
+}
+
+
+.nav-item:hover {
+
+    background: #10201b;
+
+    color: #a6bdb5;
+
+}
+
+
+.nav-item.active {
+
+    background: #142821;
+
+    color: #4bea83;
+
+}
+
+
+.nav-item.disabled {
+
+    opacity: .45;
+
+}
+
+
+.status {
+
+    position: absolute;
+
+    bottom: 25px;
+
+    left: 18px;
+
+    right: 18px;
+
+    padding: 14px;
+
+    background: #10201b;
+
+    border:
+        1px solid
+        #1b302b;
+
+    border-radius: 12px;
+
+    font-size: 12px;
+
+    color: #92aaa2;
+
+}
+
+
+.dot {
+
+    width: 8px;
+
+    height: 8px;
+
+    background: #29e878;
+
+    display: inline-block;
+
+    border-radius: 50%;
+
+    margin-right: 7px;
+
+    box-shadow:
+        0 0 10px
+        #29e878;
+
+}
+
+
+/* =====================================================
+   MAIN
+===================================================== */
+
+.main {
+
+    margin-left: 240px;
+
+    width:
+        calc(100% - 240px);
+
+    padding:
+        25px 30px;
+
+}
+
+
+/* =====================================================
+   TOP BAR
+===================================================== */
+
+.topbar {
+
+    display: flex;
+
+    justify-content:
+        space-between;
+
+    align-items: center;
+
+    margin-bottom: 28px;
+
+}
+
+
+.location {
+
+    color: #8ba49b;
+
+    font-size: 13px;
+
+}
+
+
+.location strong {
+
+    color: white;
+
+    font-size: 14px;
+
+}
+
+
+.top-actions {
+
+    display: flex;
+
+    gap: 12px;
+
+    align-items: center;
+
+}
+
+
+.pill {
+
+    padding:
+        9px 13px;
+
+    background: #10201b;
+
+    border:
+        1px solid
+        #1c332c;
+
+    border-radius: 20px;
+
+    color: #9eb5ad;
+
+    font-size: 12px;
+
+}
+
+
+.avatar {
+
+    width: 36px;
+
+    height: 36px;
+
+    border-radius: 50%;
+
+    background: #234c3c;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    font-weight: bold;
+
+}
+
+
+/* =====================================================
+   PAGE SYSTEM
+===================================================== */
+
+.page {
+
+    display: none;
+
+}
+
+
+.page.active-page {
+
+    display: block;
+
+}
+
+
+/* =====================================================
+   HERO
+===================================================== */
+
+.hero {
+
+    background:
+        linear-gradient(
+            135deg,
+            #112b21,
+            #0d1c18
+        );
+
+    border:
+        1px solid
+        #234237;
+
+    border-radius: 18px;
+
+    padding: 28px;
+
+    margin-bottom: 22px;
+
+}
+
+
+.ai-badge {
+
+    background: #183b2b;
+
+    color: #50ed8a;
+
+    border:
+        1px solid
+        #276846;
+
+    padding:
+        9px 14px;
+
+    border-radius: 20px;
+
+    font-size: 12px;
+
+    display: inline-block;
+
+    margin-bottom: 15px;
+
+}
+
+
+.hero h1 {
+
+    font-size: 27px;
+
+    margin-bottom: 8px;
+
+}
+
+
+.hero p {
+
+    color: #91aaa1;
+
+    max-width: 700px;
+
+    line-height: 1.6;
+
+    font-size: 14px;
+
+}
+
+
+/* =====================================================
+   CARDS
+===================================================== */
+
+.grid {
+
+    display: grid;
+
+    grid-template-columns:
+        2fr 1fr;
+
+    gap: 20px;
+
+}
+
+
+.card {
+
+    background: #0c1916;
+
+    border:
+        1px solid
+        #1a302a;
+
+    border-radius: 16px;
+
+    padding: 20px;
+
+}
+
+
+.card-header {
+
+    display: flex;
+
+    justify-content:
+        space-between;
+
+    align-items: center;
+
+    margin-bottom: 18px;
+
+}
+
+
+.card-header h3 {
+
+    font-size: 15px;
+
+}
+
+
+.muted {
+
+    color: #718a81;
+
+    font-size: 12px;
+
+}
+
+
+/* =====================================================
+   RISK
+===================================================== */
+
+.risk-score {
+
+    text-align: center;
+
+    padding:
+        15px 0
+        25px;
+
+}
+
+
+.circle {
+
+    width: 145px;
+
+    height: 145px;
+
+    border-radius: 50%;
+
+    margin: auto;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border:
+        10px solid
+        #e7a83b;
+
+}
+
+
+.circle strong {
+
+    font-size: 40px;
+
+}
+
+
+.circle span {
+
+    font-size: 11px;
+
+    color: #9aafa8;
+
+}
+
+
+.risk-label {
+
+    margin-top: 15px;
+
+    color: #eab24c;
+
+    font-weight: bold;
+
+}
+
+
+.alert {
+
+    padding: 13px;
+
+    border-radius: 10px;
+
+    background: #171d18;
+
+    border-left:
+        3px solid
+        #eab13d;
+
+    margin-bottom: 10px;
+
+}
+
+
+.alert strong {
+
+    display: block;
+
+    font-size: 12px;
+
+    margin-bottom: 4px;
+
+}
+
+
+.alert span {
+
+    color: #778d85;
+
+    font-size: 11px;
+
+}
+
+
+/* =====================================================
+   HAZARDS
+===================================================== */
+
+.hazards {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(4, 1fr);
+
+    gap: 15px;
+
+    margin-top: 20px;
+
+}
+
+
+.hazard {
+
+    background: #0c1916;
+
+    border:
+        1px solid
+        #1a302a;
+
+    border-radius: 14px;
+
+    padding: 17px;
+
+}
+
+
+.hazard-icon {
+
+    font-size: 22px;
+
+    margin-bottom: 12px;
+
+}
+
+
+.hazard h4 {
+
+    font-size: 13px;
+
+    margin-bottom: 8px;
+
+}
+
+
+.bar {
+
+    height: 5px;
+
+    background: #172a25;
+
+    border-radius: 10px;
+
+    overflow: hidden;
+
+    margin: 8px 0;
+
+}
+
+
+.fill {
+
+    height: 100%;
+
+    border-radius: 10px;
+
+}
+
+
+.flood {
+
+    width: 72%;
+
+    background: #e9aa3b;
+
+}
+
+
+.fire {
+
+    width: 43%;
+
+    background: #e87845;
+
+}
+
+
+.pollution {
+
+    width: 81%;
+
+    background: #e95757;
+
+}
+
+
+.storm {
+
+    width: 25%;
+
+    background: #42d987;
+
+}
+
+
+.risk-text {
+
+    font-size: 11px;
+
+    color: #789087;
+
+}
+
+
+/* =====================================================
+   AI PANEL
+===================================================== */
+
+.ai-panel {
+
+    margin-top: 20px;
+
+    background: #101f1a;
+
+    border:
+        1px solid
+        #28503d;
+
+    border-radius: 16px;
+
+    padding: 20px;
+
+}
+
+
+.ai-title {
+
+    color: #4bea83;
+
+    font-size: 13px;
+
+    font-weight: bold;
+
+    margin-bottom: 10px;
+
+}
+
+
+.ai-panel p {
+
+    color: #9cb1aa;
+
+    line-height: 1.6;
+
+    font-size: 13px;
+
+}
+
+
+/* =====================================================
+   LIVE WEATHER MAP
+===================================================== */
+
+.map-header {
+
+    display: flex;
+
+    justify-content:
+        space-between;
+
+    align-items: center;
+
+    margin-bottom: 20px;
+
+}
+
+
+.map-header h1 {
+
+    font-size: 25px;
+
+}
+
+
+.map-header p {
+
+    color: #718a81;
+
+    font-size: 13px;
+
+    margin-top: 6px;
+
+}
+
+
+.map-filters {
+
+    display: flex;
+
+    gap: 8px;
+
+}
+
+
+.map-filter {
+
+    padding:
+        9px 14px;
+
+    border-radius: 9px;
+
+    background: #10201b;
+
+    border:
+        1px solid
+        #1c332c;
+
+    color: #9eb5ad;
+
+    cursor: pointer;
+
+}
+
+
+.map-filter:hover,
+
+.map-filter.selected {
+
+    background: #183b2b;
+
+    color: #4bea83;
+
+    border-color: #2d6d4b;
+
+}
+
+
+/* =====================================================
+   BIG MAP
+===================================================== */
+
+.big-map-container {
+
+    height:
+        calc(100vh - 190px);
+
+    min-height: 500px;
+
+    border-radius: 16px;
+
+    overflow: hidden;
+
+    border:
+        1px solid
+        #1a302a;
+
+    position: relative;
+
+}
+
+
+#bigMap {
+
+    width: 100%;
+
+    height: 100%;
+
+}
+
+
+/* =====================================================
+   MAP INFO
+===================================================== */
+
+.map-info {
+
+    position: absolute;
+
+    top: 15px;
+
+    left: 15px;
+
+    z-index: 500;
+
+    width: 220px;
+
+    background:
+        rgba(
+            8,
+            17,
+            15,
+            .94
+        );
+
+    border:
+        1px solid
+        #294a3d;
+
+    border-radius: 12px;
+
+    padding: 16px;
+
+}
+
+
+.map-info h3 {
+
+    font-size: 13px;
+
+    margin-bottom: 12px;
+
+}
+
+
+.map-info-row {
+
+    display: flex;
+
+    justify-content:
+        space-between;
+
+    padding: 8px 0;
+
+    border-bottom:
+        1px solid
+        #1b302a;
+
+    color: #81988f;
+
+    font-size: 11px;
+
+}
+
+
+.map-info-row strong {
+
+    color: white;
+
+}
+
+
+/* =====================================================
+   LEGEND
+===================================================== */
+
+.map-legend {
+
+    position: absolute;
+
+    right: 20px;
+
+    bottom: 20px;
+
+    z-index: 500;
+
+    background:
+        rgba(
+            8,
+            17,
+            15,
+            .94
+        );
+
+    border:
+        1px solid
+        #294a3d;
+
+    border-radius: 10px;
+
+    padding: 12px;
+
+    font-size: 11px;
+
+    color: #8da49c;
+
+}
+
+
+.map-legend div {
+
+    margin: 6px 0;
+
+}
+
+
+.map-legend span {
+
+    display: inline-block;
+
+    width: 9px;
+
+    height: 9px;
+
+    border-radius: 50%;
+
+    margin-right: 7px;
+
+}
+
+
+.rain-dot {
+
+    background: #3498db;
+
+}
+
+
+.storm-dot {
+
+    background: #9b59b6;
+
+}
+
+
+.heat-dot {
+
+    background: #e67e22;
+
+}
+
+
+.normal-dot {
+
+    background: #2ecc71;
+
+}
+
+
+/* =====================================================
+   MOBILE
+===================================================== */
+
+@media(max-width: 1000px) {
+
     .sidebar {
-        width: 240px;
-        background: #0b1714;
-        border-right: 1px solid #1b302b;
-        padding: 25px 18px;
-        position: fixed;
-        height: 100vh;
+
+        width: 70px;
+
     }
 
-    .logo {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        margin-bottom: 45px;
-    }
 
-    .logo-icon {
-        width: 38px;
-        height: 38px;
-        background: #1ed760;
-        color: #06100d;
-        border-radius: 11px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 20px;
-        font-weight: bold;
-    }
+    .logo h2,
 
-    .logo h2 {
-        font-size: 18px;
-    }
+    .nav-item span,
 
-    .logo span {
-        color: #1ed760;
-    }
-
-    .nav-title {
-        color: #657c75;
-        font-size: 11px;
-        text-transform: uppercase;
-        letter-spacing: 1.5px;
-        margin: 20px 12px 10px;
-    }
-
-    .nav-item {
-        padding: 12px 13px;
-        border-radius: 10px;
-        margin: 5px 0;
-        color: #91aaa1;
-        cursor: pointer;
-        transition: .2s;
-    }
-
-    .nav-item:hover,
-    .nav-item.active {
-        background: #142821;
-        color: #4bea83;
-    }
+    .nav-title,
 
     .status {
-        position: absolute;
-        bottom: 25px;
-        left: 18px;
-        right: 18px;
-        padding: 14px;
-        background: #10201b;
-        border: 1px solid #1b302b;
-        border-radius: 12px;
-        font-size: 12px;
-        color: #92aaa2;
+
+        display: none;
+
     }
 
-    .dot {
-        width: 8px;
-        height: 8px;
-        background: #29e878;
-        display: inline-block;
-        border-radius: 50%;
-        margin-right: 7px;
-        box-shadow: 0 0 10px #29e878;
-    }
 
-    /* MAIN */
     .main {
-        margin-left: 240px;
-        width: calc(100% - 240px);
-        padding: 25px 30px;
+
+        margin-left: 70px;
+
+        width:
+            calc(100% - 70px);
+
     }
 
-    .topbar {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 28px;
-    }
 
-    .location {
-        color: #8ba49b;
-        font-size: 13px;
-    }
-
-    .location strong {
-        color: white;
-        font-size: 14px;
-    }
-
-    .top-actions {
-        display: flex;
-        gap: 12px;
-        align-items: center;
-    }
-
-    .pill {
-        padding: 9px 13px;
-        background: #10201b;
-        border: 1px solid #1c332c;
-        border-radius: 20px;
-        color: #9eb5ad;
-        font-size: 12px;
-    }
-
-    .avatar {
-        width: 36px;
-        height: 36px;
-        border-radius: 50%;
-        background: #234c3c;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: bold;
-    }
-
-    /* HERO */
-    .hero {
-        background: linear-gradient(135deg, #112b21, #0d1c18);
-        border: 1px solid #234237;
-        border-radius: 18px;
-        padding: 28px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 22px;
-        overflow: hidden;
-        position: relative;
-    }
-
-    .hero:after {
-        content: "";
-        position: absolute;
-        width: 300px;
-        height: 300px;
-        border-radius: 50%;
-        right: -100px;
-        top: -130px;
-        background: rgba(38, 225, 119, .08);
-    }
-
-    .hero h1 {
-        font-size: 27px;
-        margin-bottom: 8px;
-    }
-
-    .hero p {
-        color: #91aaa1;
-        max-width: 650px;
-        line-height: 1.6;
-        font-size: 14px;
-    }
-
-    .ai-badge {
-        background: #183b2b;
-        color: #50ed8a;
-        border: 1px solid #276846;
-        padding: 9px 14px;
-        border-radius: 20px;
-        font-size: 12px;
-        display: inline-block;
-        margin-bottom: 15px;
-    }
-
-    /* GRID */
     .grid {
-        display: grid;
-        grid-template-columns: 2fr 1fr;
-        gap: 20px;
+
+        grid-template-columns: 1fr;
+
     }
 
-    .card {
-        background: #0c1916;
-        border: 1px solid #1a302a;
-        border-radius: 16px;
-        padding: 20px;
-    }
 
-    .card-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 18px;
-    }
-
-    .card-header h3 {
-        font-size: 15px;
-    }
-
-    .muted {
-        color: #718a81;
-        font-size: 12px;
-    }
-
-    /* MAP */
-    .map {
-        height: 360px;
-        background:
-            radial-gradient(circle at 30% 40%, rgba(238, 71, 71, .28), transparent 80px),
-            radial-gradient(circle at 70% 25%, rgba(255, 172, 51, .25), transparent 90px),
-            radial-gradient(circle at 55% 70%, rgba(35, 200, 110, .22), transparent 110px),
-            #0b211a;
-        border-radius: 13px;
-        position: relative;
-        overflow: hidden;
-        border: 1px solid #18362c;
-    }
-
-    .map:before {
-        content: "INDIA";
-        position: absolute;
-        left: 35%;
-        top: 42%;
-        font-size: 70px;
-        font-weight: 800;
-        color: rgba(114, 180, 149, .12);
-        transform: rotate(-7deg);
-    }
-
-    .map-grid {
-        position: absolute;
-        inset: 0;
-        background-image:
-            linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px);
-        background-size: 40px 40px;
-    }
-
-    .hotspot {
-        position: absolute;
-        width: 14px;
-        height: 14px;
-        border-radius: 50%;
-        cursor: pointer;
-    }
-
-    .hotspot:after {
-        content: "";
-        position: absolute;
-        width: 30px;
-        height: 30px;
-        border-radius: 50%;
-        left: -8px;
-        top: -8px;
-        animation: pulse 2s infinite;
-        border: 1px solid currentColor;
-    }
-
-    .red {
-        background: #ff5757;
-        color: #ff5757;
-        box-shadow: 0 0 18px #ff5757;
-    }
-
-    .orange {
-        background: #ffb340;
-        color: #ffb340;
-        box-shadow: 0 0 18px #ffb340;
-    }
-
-    .green {
-        background: #32e879;
-        color: #32e879;
-        box-shadow: 0 0 18px #32e879;
-    }
-
-    .h1 { left: 49%; top: 35%; }
-    .h2 { left: 39%; top: 29%; }
-    .h3 { left: 57%; top: 58%; }
-    .h4 { left: 31%; top: 48%; }
-    .h5 { left: 67%; top: 38%; }
-
-    @keyframes pulse {
-        0% { transform: scale(.6); opacity: .8; }
-        100% { transform: scale(1.5); opacity: 0; }
-    }
-
-    .map-legend {
-        position: absolute;
-        bottom: 15px;
-        left: 15px;
-        background: rgba(6,15,12,.85);
-        padding: 9px 12px;
-        border-radius: 9px;
-        display: flex;
-        gap: 15px;
-        font-size: 10px;
-        color: #8fa79e;
-    }
-
-    .legend span {
-        display: inline-block;
-        width: 7px;
-        height: 7px;
-        border-radius: 50%;
-        margin-right: 4px;
-    }
-
-    /* RISK */
-    .risk-score {
-        text-align: center;
-        padding: 15px 0 25px;
-    }
-
-    .circle {
-        width: 145px;
-        height: 145px;
-        border-radius: 50%;
-        margin: auto;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        border: 10px solid #e7a83b;
-        box-shadow: 0 0 35px rgba(231,168,59,.12);
-    }
-
-    .circle strong {
-        font-size: 40px;
-    }
-
-    .circle span {
-        font-size: 11px;
-        color: #9aafa8;
-    }
-
-    .risk-label {
-        margin-top: 15px;
-        color: #eab24c;
-        font-weight: bold;
-    }
-
-    /* HAZARDS */
     .hazards {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
+
+        grid-template-columns:
+            repeat(2, 1fr);
+
+    }
+
+}
+
+
+@media(max-width: 600px) {
+
+    .main {
+
+        padding: 15px;
+
+    }
+
+
+    .hazards {
+
+        grid-template-columns: 1fr;
+
+    }
+
+
+    .top-actions .pill {
+
+        display: none;
+
+    }
+
+
+    .map-header {
+
+        flex-direction: column;
+
+        align-items: flex-start;
+
         gap: 15px;
-        margin-top: 20px;
+
     }
 
-    .hazard {
-        background: #0c1916;
-        border: 1px solid #1a302a;
-        border-radius: 14px;
-        padding: 17px;
+
+    .map-filters {
+
+        flex-wrap: wrap;
+
     }
 
-    .hazard-icon {
-        font-size: 22px;
-        margin-bottom: 12px;
+
+    .big-map-container {
+
+        height: 500px;
+
     }
 
-    .hazard h4 {
-        font-size: 13px;
-        margin-bottom: 8px;
-    }
+}
 
-    .bar {
-        height: 5px;
-        background: #172a25;
-        border-radius: 10px;
-        overflow: hidden;
-        margin: 8px 0;
-    }
-
-    .fill {
-        height: 100%;
-        border-radius: 10px;
-    }
-
-    .flood { width: 72%; background: #e9aa3b; }
-    .fire { width: 43%; background: #e87845; }
-    .pollution { width: 81%; background: #e95757; }
-    .storm { width: 25%; background: #42d987; }
-
-    .risk-text {
-        font-size: 11px;
-        color: #789087;
-    }
-
-    /* AI */
-    .ai-panel {
-        margin-top: 20px;
-        background: #101f1a;
-        border: 1px solid #28503d;
-        border-radius: 16px;
-        padding: 20px;
-    }
-
-    .ai-title {
-        color: #4bea83;
-        font-size: 13px;
-        font-weight: bold;
-        margin-bottom: 10px;
-    }
-
-    .ai-panel p {
-        color: #9cb1aa;
-        line-height: 1.6;
-        font-size: 13px;
-    }
-
-    .alert {
-        padding: 13px;
-        border-radius: 10px;
-        background: #171d18;
-        border-left: 3px solid #eab13d;
-        margin-bottom: 10px;
-    }
-
-    .alert strong {
-        display: block;
-        font-size: 12px;
-        margin-bottom: 4px;
-    }
-
-    .alert span {
-        color: #778d85;
-        font-size: 11px;
-    }
-
-    /* RESPONSIVE */
-    @media(max-width: 1000px) {
-        .sidebar {
-            width: 70px;
-        }
-
-        .logo h2,
-        .nav-item span,
-        .nav-title,
-        .status {
-            display: none;
-        }
-
-        .main {
-            margin-left: 70px;
-            width: calc(100% - 70px);
-        }
-
-        .grid {
-            grid-template-columns: 1fr;
-        }
-
-        .hazards {
-            grid-template-columns: repeat(2, 1fr);
-        }
-    }
-
-    @media(max-width: 600px) {
-        .main {
-            padding: 15px;
-        }
-
-        .hero {
-            padding: 20px;
-        }
-
-        .hero h1 {
-            font-size: 21px;
-        }
-
-        .hazards {
-            grid-template-columns: 1fr;
-        }
-
-        .top-actions .pill {
-            display: none;
-        }
-    }
 </style>
+
 </head>
+
 
 <body>
 
+
 <div class="app">
 
-    <!-- SIDEBAR -->
-    <aside class="sidebar">
 
-        <div class="logo">
-            <div class="logo-icon">E</div>
-            <h2>Eco<span>Shield</span></h2>
+<!-- =====================================================
+     SIDEBAR
+===================================================== -->
+
+<aside class="sidebar">
+
+
+    <div class="logo">
+
+        <div class="logo-icon">
+            E
         </div>
 
-        <div class="nav-title">Monitor</div>
+        <h2>
+            Eco<span>Shield</span>
+        </h2>
 
-        <div class="nav-item active">◉ <span>Overview</span></div>
-        <div class="nav-item">⌁ <span>Live Map</span></div>
-        <div class="nav-item">⚠ <span>Alerts</span></div>
-        <div class="nav-item">◌ <span>Forecasts</span></div>
+    </div>
 
-        <div class="nav-title">Intelligence</div>
 
-        <div class="nav-item">✦ <span>AI Insights</span></div>
-        <div class="nav-item">▣ <span>Reports</span></div>
+    <div class="nav-title">
+        Monitor
+    </div>
 
-        <div class="nav-title">System</div>
 
-        <div class="nav-item">⚙ <span>Settings</span></div>
+    <!-- OVERVIEW -->
 
-        <div class="status">
-            <span class="dot"></span>
-            All systems operational
+    <div
+        class="nav-item active"
+        onclick="showPage('overview', this)"
+    >
+
+        ◉ <span>Overview</span>
+
+    </div>
+
+
+    <!-- LIVE MAP -->
+
+    <div
+        class="nav-item"
+        onclick="showPage('live-map', this)"
+    >
+
+        ⌁ <span>Live Map</span>
+
+    </div>
+
+
+    <!-- DISABLED -->
+
+    <div
+        class="nav-item disabled"
+        onclick="comingSoon()"
+    >
+
+        ⚠ <span>Alerts</span>
+
+    </div>
+
+
+    <div
+        class="nav-item disabled"
+        onclick="comingSoon()"
+    >
+
+        ◌ <span>Forecasts</span>
+
+    </div>
+
+
+    <div class="nav-title">
+        Intelligence
+    </div>
+
+
+    <div
+        class="nav-item disabled"
+        onclick="comingSoon()"
+    >
+
+        ✦ <span>AI Insights</span>
+
+    </div>
+
+
+    <div
+        class="nav-item disabled"
+        onclick="comingSoon()"
+    >
+
+        ▣ <span>Reports</span>
+
+    </div>
+
+
+    <div class="nav-title">
+        System
+    </div>
+
+
+    <div
+        class="nav-item disabled"
+        onclick="comingSoon()"
+    >
+
+        ⚙ <span>Settings</span>
+
+    </div>
+
+
+    <div class="status">
+
+        <span class="dot"></span>
+
+        All systems operational
+
+    </div>
+
+
+</aside>
+
+
+
+<!-- =====================================================
+     MAIN
+===================================================== -->
+
+<main class="main">
+
+
+<!-- =====================================================
+     OVERVIEW PAGE
+===================================================== -->
+
+<section
+    id="overview-page"
+    class="page active-page"
+>
+
+
+    <div class="topbar">
+
+        <div class="location">
+
+            Monitoring location<br>
+
+            <strong>
+                📍 Ludhiana, Punjab, India
+            </strong>
+
         </div>
 
-    </aside>
 
+        <div class="top-actions">
 
-    <!-- MAIN -->
-    <main class="main">
-
-        <!-- TOP BAR -->
-        <div class="topbar">
-
-            <div class="location">
-                Monitoring location<br>
-                <strong> Ludhiana, Punjab, India</strong>
+            <div class="pill">
+                ● Live data
             </div>
 
-            <div class="top-actions">
-                <div class="pill">● Live data</div>
-                <div class="pill" id="time">16:21 IST</div>
-                <div class="avatar">DS</div>
+            <div
+                class="pill"
+                id="overviewTime"
+            >
+                --:-- IST
             </div>
 
-        </div>
-
-
-        <!-- HERO -->
-        <section class="hero">
-
-            <div>
-                <div class="ai-badge">✦ AI ENVIRONMENTAL INTELLIGENCE</div>
-
-                <h1>Environmental Risk Command Center</h1>
-
-                <p>
-                    Real-time monitoring of floods, forest fires,
-                    pollution and extreme weather events across India.
-                    AI analyzes multiple signals to provide early warnings
-                    and actionable intelligence.
-                </p>
-            </div>
-
-        </section>
-
-
-        <!-- MAIN GRID -->
-        <div class="grid">
-
-            <!-- MAP -->
-            <div class="card">
-
-                <div class="card-header">
-                    <h3>Live Environmental Map</h3>
-                    <span class="muted">Updated 2 min ago</span>
-                </div>
-
-                <div class="map">
-
-                    <div class="map-grid"></div>
-
-                    <div class="hotspot red h1"></div>
-                    <div class="hotspot orange h2"></div>
-                    <div class="hotspot green h3"></div>
-                    <div class="hotspot orange h4"></div>
-                    <div class="hotspot red h5"></div>
-
-                    <div class="map-legend">
-                        <div><span style="background:#ff5757"></span> Critical</div>
-                        <div><span style="background:#ffb340"></span> Warning</div>
-                        <div><span style="background:#32e879"></span> Normal</div>
-                    </div>
-
-                </div>
-
-            </div>
-
-
-            <!-- RISK -->
-            <div class="card">
-
-                <div class="card-header">
-                    <h3>Overall Risk</h3>
-                    <span class="muted">Today</span>
-                </div>
-
-                <div class="risk-score">
-
-                    <div class="circle">
-                        <strong>68</strong>
-                        <span>/ 100</span>
-                    </div>
-
-                    <div class="risk-label">MODERATE RISK</div>
-
-                    <p class="muted" style="margin-top:10px;">
-                        +12% compared to yesterday
-                    </p>
-
-                </div>
-
-                <div class="alert">
-                    <strong>⚠ Heavy rainfall probability</strong>
-                    <span>Punjab • Next 12 hours</span>
-                </div>
-
-                <div class="alert">
-                    <strong>⚠ Air quality deterioration</strong>
-                    <span>Ludhiana • Moderate confidence</span>
-                </div>
-
+            <div class="avatar">
+                DS
             </div>
 
         </div>
 
+    </div>
 
-        <!-- HAZARDS -->
-        <section class="hazards">
 
-            <div class="hazard">
-                <div class="hazard-icon">🌊</div>
-                <h4>Flood Risk</h4>
-                <div class="bar"><div class="fill flood"></div></div>
-                <span class="risk-text">72% — Elevated</span>
+    <!-- HERO -->
+
+    <section class="hero">
+
+        <div>
+
+            <div class="ai-badge">
+                ✦ AI ENVIRONMENTAL INTELLIGENCE
             </div>
 
-            <div class="hazard">
-                <div class="hazard-icon">🔥</div>
-                <h4>Forest Fire</h4>
-                <div class="bar"><div class="fill fire"></div></div>
-                <span class="risk-text">43% — Moderate</span>
-            </div>
 
-            <div class="hazard">
-                <div class="hazard-icon">🏭</div>
-                <h4>Air Pollution</h4>
-                <div class="bar"><div class="fill pollution"></div></div>
-                <span class="risk-text">81% — High</span>
-            </div>
+            <h1>
+                Environmental Risk Command Center
+            </h1>
 
-            <div class="hazard">
-                <div class="hazard-icon">⛈</div>
-                <h4>Extreme Weather</h4>
-                <div class="bar"><div class="fill storm"></div></div>
-                <span class="risk-text">25% — Low</span>
-            </div>
-
-        </section>
-
-
-        <!-- AI INSIGHT -->
-        <section class="ai-panel">
-
-            <div class="ai-title">✦ AI-GENERATED RISK ANALYSIS</div>
 
             <p>
-                Current signals indicate an elevated environmental risk
-                around Punjab. Rainfall intensity is expected to increase
-                during the next 12 hours while air quality is showing a
-                deteriorating trend. Authorities should prioritize
-                low-lying areas and monitor drainage capacity.
+
+                Real-time monitoring of floods,
+                forest fires, pollution and extreme
+                weather events across India.
+
+                AI analyzes multiple signals to provide
+                early warnings and actionable intelligence.
+
             </p>
 
-        </section>
+        </div>
 
-    </main>
+    </section>
+
+
+    <!-- DASHBOARD -->
+
+    <div class="grid">
+
+
+        <div class="card">
+
+            <div class="card-header">
+
+                <h3>
+                    Environmental Monitoring
+                </h3>
+
+                <span class="muted">
+                    Live
+                </span>
+
+            </div>
+
+
+            <p class="muted">
+
+                Use the Live Map to explore current
+                weather conditions and environmental
+                events across India.
+
+            </p>
+
+        </div>
+
+
+        <!-- RISK -->
+
+        <div class="card">
+
+            <div class="card-header">
+
+                <h3>
+                    Overall Risk
+                </h3>
+
+                <span class="muted">
+                    Today
+                </span>
+
+            </div>
+
+
+            <div class="risk-score">
+
+                <div class="circle">
+
+                    <strong>
+                        68
+                    </strong>
+
+                    <span>
+                        / 100
+                    </span>
+
+                </div>
+
+
+                <div class="risk-label">
+                    MODERATE RISK
+                </div>
+
+            </div>
+
+
+            <div class="alert">
+
+                <strong>
+                    ⚠ Heavy rainfall probability
+                </strong>
+
+                <span>
+                    Punjab • Next 12 hours
+                </span>
+
+            </div>
+
+
+            <div class="alert">
+
+                <strong>
+                    ⚠ Air quality deterioration
+                </strong>
+
+                <span>
+                    Ludhiana • Moderate confidence
+                </span>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- HAZARDS -->
+
+    <section class="hazards">
+
+
+        <div class="hazard">
+
+            <div class="hazard-icon">
+                🌊
+            </div>
+
+            <h4>
+                Flood Risk
+            </h4>
+
+            <div class="bar">
+
+                <div class="fill flood"></div>
+
+            </div>
+
+            <span class="risk-text">
+                72% — Elevated
+            </span>
+
+        </div>
+
+
+        <div class="hazard">
+
+            <div class="hazard-icon">
+                🔥
+            </div>
+
+            <h4>
+                Forest Fire
+            </h4>
+
+            <div class="bar">
+
+                <div class="fill fire"></div>
+
+            </div>
+
+            <span class="risk-text">
+                43% — Moderate
+            </span>
+
+        </div>
+
+
+        <div class="hazard">
+
+            <div class="hazard-icon">
+                🏭
+            </div>
+
+            <h4>
+                Air Pollution
+            </h4>
+
+            <div class="bar">
+
+                <div class="fill pollution"></div>
+
+            </div>
+
+            <span class="risk-text">
+                81% — High
+            </span>
+
+        </div>
+
+
+        <div class="hazard">
+
+            <div class="hazard-icon">
+                ⛈
+            </div>
+
+            <h4>
+                Extreme Weather
+            </h4>
+
+            <div class="bar">
+
+                <div class="fill storm"></div>
+
+            </div>
+
+            <span class="risk-text">
+                25% — Low
+            </span>
+
+        </div>
+
+
+    </section>
+
+
+    <!-- AI -->
+
+    <section class="ai-panel">
+
+        <div class="ai-title">
+
+            ✦ AI-GENERATED RISK ANALYSIS
+
+        </div>
+
+
+        <p>
+
+            Current signals indicate an elevated
+            environmental risk around Punjab.
+            Rainfall intensity is expected to increase
+            while air quality is showing a deteriorating
+            trend.
+
+        </p>
+
+    </section>
+
+
+</section>
+
+
+
+<!-- =====================================================
+     LIVE WEATHER MAP PAGE
+===================================================== -->
+
+<section
+    id="live-map-page"
+    class="page"
+>
+
+
+    <div class="topbar">
+
+        <div class="location">
+
+            Weather monitoring<br>
+
+            <strong>
+                🌦️ Live Weather Map — India
+            </strong>
+
+        </div>
+
+
+        <div class="top-actions">
+
+            <div class="pill">
+                ● LIVE WEATHER
+            </div>
+
+
+            <div
+                class="pill"
+                id="mapTime"
+            >
+                --:-- IST
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- MAP HEADER -->
+
+    <div class="map-header">
+
+        <div>
+
+            <h1>
+                Live Weather Intelligence
+            </h1>
+
+
+            <p>
+
+                Monitor temperature,
+                rainfall, thunderstorms
+                and extreme weather conditions
+                across India.
+
+            </p>
+
+        </div>
+
+
+        <div class="map-filters">
+
+
+            <button
+                class="map-filter selected"
+                onclick="filterWeather('all', this)"
+            >
+                All
+            </button>
+
+
+            <button
+                class="map-filter"
+                onclick="filterWeather('rain', this)"
+            >
+                🌧 Rain
+            </button>
+
+
+            <button
+                class="map-filter"
+                onclick="filterWeather('storm', this)"
+            >
+                ⛈ Storm
+            </button>
+
+
+            <button
+                class="map-filter"
+                onclick="filterWeather('hot', this)"
+            >
+                🌡 Heat
+            </button>
+
+
+        </div>
+
+    </div>
+
+
+    <!-- MAP -->
+
+    <div class="big-map-container">
+
+
+        <div id="bigMap"></div>
+
+
+        <!-- MAP INFORMATION -->
+
+        <div class="map-info">
+
+
+            <h3>
+                Weather Overview
+            </h3>
+
+
+            <div class="map-info-row">
+
+                <span>
+                    Active Events
+                </span>
+
+                <strong
+                    id="weatherEvents"
+                >
+                    6
+                </strong>
+
+            </div>
+
+
+            <div class="map-info-row">
+
+                <span>
+                    Heavy Rain
+                </span>
+
+                <strong>
+                    2
+                </strong>
+
+            </div>
+
+
+            <div class="map-info-row">
+
+                <span>
+                    Thunderstorms
+                </span>
+
+                <strong>
+                    2
+                </strong>
+
+            </div>
+
+
+            <div class="map-info-row">
+
+                <span>
+                    Heat Alerts
+                </span>
+
+                <strong>
+                    2
+                </strong>
+
+            </div>
+
+
+            <div class="map-info-row">
+
+                <span>
+                    Updated
+                </span>
+
+                <strong>
+                    2 min
+                </strong>
+
+            </div>
+
+
+        </div>
+
+
+        <!-- LEGEND -->
+
+        <div class="map-legend">
+
+
+            <div>
+
+                <span class="rain-dot"></span>
+
+                Heavy Rain
+
+            </div>
+
+
+            <div>
+
+                <span class="storm-dot"></span>
+
+                Thunderstorm
+
+            </div>
+
+
+            <div>
+
+                <span class="heat-dot"></span>
+
+                Heat Alert
+
+            </div>
+
+
+            <div>
+
+                <span class="normal-dot"></span>
+
+                Normal
+
+            </div>
+
+
+        </div>
+
+
+    </div>
+
+
+</section>
+
+
+</main>
 
 </div>
 
 
+
+<!-- =====================================================
+     LEAFLET
+===================================================== -->
+
+<script
+src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
+</script>
+
+
+
 <script>
 
-    // LIVE CLOCK
-    function updateTime() {
-        const now = new Date();
+/* =====================================================
+   PAGE NAVIGATION
+===================================================== */
 
-        const time = now.toLocaleTimeString("en-IN", {
-            hour: "2-digit",
-            minute: "2-digit",
-            hour12: false,
-            timeZone: "Asia/Kolkata"
-        });
-
-        document.getElementById("time").textContent = time + " IST";
-    }
-
-    updateTime();
-    setInterval(updateTime, 1000);
+function showPage(pageName, clickedItem) {
 
 
-    // NAVIGATION EFFECT
-    document.querySelectorAll(".nav-item").forEach(item => {
+    /*
+       Remove active state
+       from sidebar
+    */
 
-        item.addEventListener("click", () => {
+    document
+        .querySelectorAll(".nav-item")
+        .forEach(item => {
 
-            document.querySelectorAll(".nav-item")
-                .forEach(i => i.classList.remove("active"));
-
-            item.classList.add("active");
-
-        });
-
-    });
-
-
-    // HOTSPOT INTERACTION
-    document.querySelectorAll(".hotspot").forEach(point => {
-
-        point.addEventListener("click", () => {
-
-            alert(
-                "Environmental event detected.\n\n" +
-                "AI confidence: 87%\n" +
-                "Recommended action: Monitor affected region."
+            item.classList.remove(
+                "active"
             );
 
         });
 
+
+    /*
+       Activate selected tab
+    */
+
+    clickedItem.classList.add(
+        "active"
+    );
+
+
+    /*
+       Hide all pages
+    */
+
+    document
+        .querySelectorAll(".page")
+        .forEach(page => {
+
+            page.classList.remove(
+                "active-page"
+            );
+
+        });
+
+
+    /*
+       Show selected page
+    */
+
+    document
+        .getElementById(
+            pageName + "-page"
+        )
+        .classList.add(
+            "active-page"
+        );
+
+
+    /*
+       Leaflet needs this when
+       switching to hidden map
+    */
+
+    if (
+        pageName === "live-map"
+    ) {
+
+        setTimeout(() => {
+
+            bigMap.invalidateSize();
+
+        }, 200);
+
+    }
+
+}
+
+
+/* =====================================================
+   COMING SOON
+===================================================== */
+
+function comingSoon() {
+
+    alert(
+        "This feature is coming soon.\n\n" +
+        "Overview and Live Weather Map " +
+        "are currently available."
+    );
+
+}
+
+
+/* =====================================================
+   LIVE CLOCK
+===================================================== */
+
+function updateClock() {
+
+
+    const now = new Date();
+
+
+    const time =
+        now.toLocaleTimeString(
+            "en-IN",
+            {
+                hour: "2-digit",
+
+                minute: "2-digit",
+
+                hour12: false,
+
+                timeZone:
+                    "Asia/Kolkata"
+            }
+        );
+
+
+    document
+        .getElementById(
+            "overviewTime"
+        )
+        .textContent =
+        time + " IST";
+
+
+    document
+        .getElementById(
+            "mapTime"
+        )
+        .textContent =
+        time + " IST";
+
+}
+
+
+updateClock();
+
+
+setInterval(
+    updateClock,
+    1000
+);
+
+
+/* =====================================================
+   CREATE MAP
+===================================================== */
+
+const bigMap =
+    L.map(
+        "bigMap"
+    ).setView(
+        [22.5, 79],
+        5
+    );
+
+
+/* OpenStreetMap */
+
+L.tileLayer(
+
+    "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+
+    {
+
+        attribution:
+            "&copy; OpenStreetMap contributors"
+
+    }
+
+).addTo(
+    bigMap
+);
+
+
+/* =====================================================
+   WEATHER MARKER
+===================================================== */
+
+function weatherIcon(
+    color,
+    symbol
+) {
+
+
+    return L.divIcon({
+
+        className: "",
+
+
+        html: `
+
+            <div style="
+
+                width:38px;
+
+                height:38px;
+
+                border-radius:50%;
+
+                background:${color};
+
+                border:3px solid white;
+
+                box-shadow:
+                    0 0 20px
+                    ${color};
+
+                display:flex;
+
+                align-items:center;
+
+                justify-content:center;
+
+                font-size:18px;
+
+            ">
+
+                ${symbol}
+
+            </div>
+
+        `,
+
+
+        iconSize:
+            [38, 38],
+
+
+        iconAnchor:
+            [19, 19]
+
     });
+
+}
+
+
+/* =====================================================
+   WEATHER DATA
+===================================================== */
+
+const weatherData = [
+
+
+    {
+        type: "rain",
+
+        city:
+            "Ludhiana, Punjab",
+
+        position:
+            [30.90, 75.85],
+
+        temperature:
+            "32°C",
+
+        condition:
+            "Heavy Rain Possible",
+
+        humidity:
+            "78%",
+
+        wind:
+            "18 km/h",
+
+        color:
+            "#3498db",
+
+        icon:
+            "🌧️"
+    },
+
+
+    {
+        type: "storm",
+
+        city:
+            "Delhi",
+
+        position:
+            [28.61, 77.20],
+
+        temperature:
+            "29°C",
+
+        condition:
+            "Thunderstorm Alert",
+
+        humidity:
+            "85%",
+
+        wind:
+            "22 km/h",
+
+        color:
+            "#9b59b6",
+
+        icon:
+            "⛈️"
+    },
+
+
+    {
+        type: "rain",
+
+        city:
+            "Guwahati, Assam",
+
+        position:
+            [26.14, 91.73],
+
+        temperature:
+            "27°C",
+
+        condition:
+            "Heavy Rain",
+
+        humidity:
+            "91%",
+
+        wind:
+            "15 km/h",
+
+        color:
+            "#3498db",
+
+        icon:
+            "🌧️"
+    },
+
+
+    {
+        type: "hot",
+
+        city:
+            "Jaipur, Rajasthan",
+
+        position:
+            [26.91, 75.78],
+
+        temperature:
+            "39°C",
+
+        condition:
+            "Heat Alert",
+
+        humidity:
+            "32%",
+
+        wind:
+            "12 km/h",
+
+        color:
+            "#e67e22",
+
+        icon:
+            "🌡️"
+    },
+
+
+    {
+        type: "storm",
+
+        city:
+            "Mumbai, Maharashtra",
+
+        position:
+            [19.07, 72.87],
+
+        temperature:
+            "28°C",
+
+        condition:
+            "Thunderstorm Possible",
+
+        humidity:
+            "82%",
+
+        wind:
+            "25 km/h",
+
+        color:
+            "#9b59b6",
+
+        icon:
+            "⛈️"
+    },
+
+
+    {
+        type: "hot",
+
+        city:
+            "Ahmedabad, Gujarat",
+
+        position:
+            [23.02, 72.57],
+
+        temperature:
+            "38°C",
+
+        condition:
+            "Hot Weather",
+
+        humidity:
+            "40%",
+
+        wind:
+            "14 km/h",
+
+        color:
+            "#e67e22",
+
+        icon:
+            "☀️"
+    }
+
+];
+
+
+/* =====================================================
+   ADD MARKERS
+===================================================== */
+
+const weatherMarkers = [];
+
+
+weatherData.forEach(
+    weather => {
+
+
+        const marker =
+            L.marker(
+
+                weather.position,
+
+                {
+
+                    icon:
+                        weatherIcon(
+                            weather.color,
+                            weather.icon
+                        )
+
+                }
+
+            );
+
+
+        marker.bindPopup(`
+
+            <div style="
+                min-width:210px;
+                color:#111;
+                font-family:Arial;
+            ">
+
+
+                <h3>
+                    ${weather.city}
+                </h3>
+
+
+                <div style="
+                    font-size:28px;
+                    margin:8px 0;
+                ">
+
+                    ${weather.temperature}
+
+                </div>
+
+
+                <b>
+                    ${weather.condition}
+                </b>
+
+
+                <br><br>
+
+
+                Humidity:
+                ${weather.humidity}
+
+
+                <br>
+
+
+                Wind:
+                ${weather.wind}
+
+
+                <br><br>
+
+
+                <b>
+                    AI Risk:
+                </b>
+
+                ${getWeatherRisk(
+                    weather.type
+                )}
+
+            </div>
+
+        `);
+
+
+        marker.weatherType =
+            weather.type;
+
+
+        marker.addTo(
+            bigMap
+        );
+
+
+        weatherMarkers.push(
+            marker
+        );
+
+    }
+);
+
+
+/* =====================================================
+   AI WEATHER RISK
+===================================================== */
+
+function getWeatherRisk(
+    type
+) {
+
+
+    if (
+        type === "storm"
+    ) {
+
+        return "HIGH";
+
+    }
+
+
+    if (
+        type === "rain"
+    ) {
+
+        return "MODERATE";
+
+    }
+
+
+    if (
+        type === "hot"
+    ) {
+
+        return "ELEVATED";
+
+    }
+
+
+    return "LOW";
+
+}
+
+
+/* =====================================================
+   WEATHER FILTER
+===================================================== */
+
+function filterWeather(
+    type,
+    button
+) {
+
+
+    /*
+       Update button
+    */
+
+    document
+        .querySelectorAll(
+            ".map-filter"
+        )
+        .forEach(btn => {
+
+            btn.classList.remove(
+                "selected"
+            );
+
+        });
+
+
+    button.classList.add(
+        "selected"
+    );
+
+
+    /*
+       Filter markers
+    */
+
+    let visible = 0;
+
+
+    weatherMarkers.forEach(
+        marker => {
+
+
+            if (
+
+                type === "all" ||
+
+                marker.weatherType ===
+                    type
+
+            ) {
+
+
+                marker.addTo(
+                    bigMap
+                );
+
+
+                visible++;
+
+
+            } else {
+
+
+                bigMap.removeLayer(
+                    marker
+                );
+
+
+            }
+
+        }
+    );
+
+
+    /*
+       Update counter
+    */
+
+    document
+        .getElementById(
+            "weatherEvents"
+        )
+        .textContent =
+        visible;
+
+}
 
 </script>
 
