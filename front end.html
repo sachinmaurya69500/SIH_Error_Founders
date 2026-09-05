@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EcoShield AI — Environmental Intelligence</title>
+
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: Inter, Arial, sans-serif;
+    }
+
+    body {
+        background: #08110f;
+        color: #eefaf5;
+        min-height: 100vh;
+    }
+
+    .app {
+        display: flex;
+        min-height: 100vh;
+    }
+
+    /* SIDEBAR */
+    .sidebar {
+        width: 240px;
+        background: #0b1714;
+        border-right: 1px solid #1b302b;
+        padding: 25px 18px;
+        position: fixed;
+        height: 100vh;
+    }
+
+    .logo {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 45px;
+    }
+
+    .logo-icon {
+        width: 38px;
+        height: 38px;
+        background: #1ed760;
+        color: #06100d;
+        border-radius: 11px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        font-weight: bold;
+    }
+
+    .logo h2 {
+        font-size: 18px;
+    }
+
+    .logo span {
+        color: #1ed760;
+    }
+
+    .nav-title {
+        color: #657c75;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        margin: 20px 12px 10px;
+    }
+
+    .nav-item {
+        padding: 12px 13px;
+        border-radius: 10px;
+        margin: 5px 0;
+        color: #91aaa1;
+        cursor: pointer;
+        transition: .2s;
+    }
+
+    .nav-item:hover,
+    .nav-item.active {
+        background: #142821;
+        color: #4bea83;
+    }
+
+    .status {
+        position: absolute;
+        bottom: 25px;
+        left: 18px;
+        right: 18px;
+        padding: 14px;
+        background: #10201b;
+        border: 1px solid #1b302b;
+        border-radius: 12px;
+        font-size: 12px;
+        color: #92aaa2;
+    }
+
+    .dot {
+        width: 8px;
+        height: 8px;
+        background: #29e878;
+        display: inline-block;
+        border-radius: 50%;
+        margin-right: 7px;
+        box-shadow: 0 0 10px #29e878;
+    }
+
+    /* MAIN */
+    .main {
+        margin-left: 240px;
+        width: calc(100% - 240px);
+        padding: 25px 30px;
+    }
+
+    .topbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 28px;
+    }
+
+    .location {
+        color: #8ba49b;
+        font-size: 13px;
+    }
+
+    .location strong {
+        color: white;
+        font-size: 14px;
+    }
+
+    .top-actions {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+    }
+
+    .pill {
+        padding: 9px 13px;
+        background: #10201b;
+        border: 1px solid #1c332c;
+        border-radius: 20px;
+        color: #9eb5ad;
+        font-size: 12px;
+    }
+
+    .avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: #234c3c;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+    }
+
+    /* HERO */
+    .hero {
+        background: linear-gradient(135deg, #112b21, #0d1c18);
+        border: 1px solid #234237;
+        border-radius: 18px;
+        padding: 28px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 22px;
+        overflow: hidden;
+        position: relative;
+    }
+
+    .hero:after {
+        content: "";
+        position: absolute;
+        width: 300px;
+        height: 300px;
+        border-radius: 50%;
+        right: -100px;
+        top: -130px;
+        background: rgba(38, 225, 119, .08);
+    }
+
+    .hero h1 {
+        font-size: 27px;
+        margin-bottom: 8px;
+    }
+
+    .hero p {
+        color: #91aaa1;
+        max-width: 650px;
+        line-height: 1.6;
+        font-size: 14px;
+    }
+
+    .ai-badge {
+        background: #183b2b;
+        color: #50ed8a;
+        border: 1px solid #276846;
+        padding: 9px 14px;
+        border-radius: 20px;
+        font-size: 12px;
+        display: inline-block;
+        margin-bottom: 15px;
+    }
+
+    /* GRID */
+    .grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 20px;
+    }
+
+    .card {
+        background: #0c1916;
+        border: 1px solid #1a302a;
+        border-radius: 16px;
+        padding: 20px;
+    }
+
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 18px;
+    }
+
+    .card-header h3 {
+        font-size: 15px;
+    }
+
+    .muted {
+        color: #718a81;
+        font-size: 12px;
+    }
+
+    /* MAP */
+    .map {
+        height: 360px;
+        background:
+            radial-gradient(circle at 30% 40%, rgba(238, 71, 71, .28), transparent 80px),
+            radial-gradient(circle at 70% 25%, rgba(255, 172, 51, .25), transparent 90px),
+            radial-gradient(circle at 55% 70%, rgba(35, 200, 110, .22), transparent 110px),
+            #0b211a;
+        border-radius: 13px;
+        position: relative;
+        overflow: hidden;
+        border: 1px solid #18362c;
+    }
+
+    .map:before {
+        content: "INDIA";
+        position: absolute;
+        left: 35%;
+        top: 42%;
+        font-size: 70px;
+        font-weight: 800;
+        color: rgba(114, 180, 149, .12);
+        transform: rotate(-7deg);
+    }
+
+    .map-grid {
+        position: absolute;
+        inset: 0;
+        background-image:
+            linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px);
+        background-size: 40px 40px;
+    }
+
+    .hotspot {
+        position: absolute;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        cursor: pointer;
+    }
+
+    .hotspot:after {
+        content: "";
+        position: absolute;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        left: -8px;
+        top: -8px;
+        animation: pulse 2s infinite;
+        border: 1px solid currentColor;
+    }
+
+    .red {
+        background: #ff5757;
+        color: #ff5757;
+        box-shadow: 0 0 18px #ff5757;
+    }
+
+    .orange {
+        background: #ffb340;
+        color: #ffb340;
+        box-shadow: 0 0 18px #ffb340;
+    }
+
+    .green {
+        background: #32e879;
+        color: #32e879;
+        box-shadow: 0 0 18px #32e879;
+    }
+
+    .h1 { left: 49%; top: 35%; }
+    .h2 { left: 39%; top: 29%; }
+    .h3 { left: 57%; top: 58%; }
+    .h4 { left: 31%; top: 48%; }
+    .h5 { left: 67%; top: 38%; }
+
+    @keyframes pulse {
+        0% { transform: scale(.6); opacity: .8; }
+        100% { transform: scale(1.5); opacity: 0; }
+    }
+
+    .map-legend {
+        position: absolute;
+        bottom: 15px;
+        left: 15px;
+        background: rgba(6,15,12,.85);
+        padding: 9px 12px;
+        border-radius: 9px;
+        display: flex;
+        gap: 15px;
+        font-size: 10px;
+        color: #8fa79e;
+    }
+
+    .legend span {
+        display: inline-block;
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        margin-right: 4px;
+    }
+
+    /* RISK */
+    .risk-score {
+        text-align: center;
+        padding: 15px 0 25px;
+    }
+
+    .circle {
+        width: 145px;
+        height: 145px;
+        border-radius: 50%;
+        margin: auto;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        border: 10px solid #e7a83b;
+        box-shadow: 0 0 35px rgba(231,168,59,.12);
+    }
+
+    .circle strong {
+        font-size: 40px;
+    }
+
+    .circle span {
+        font-size: 11px;
+        color: #9aafa8;
+    }
+
+    .risk-label {
+        margin-top: 15px;
+        color: #eab24c;
+        font-weight: bold;
+    }
+
+    /* HAZARDS */
+    .hazards {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 15px;
+        margin-top: 20px;
+    }
+
+    .hazard {
+        background: #0c1916;
+        border: 1px solid #1a302a;
+        border-radius: 14px;
+        padding: 17px;
+    }
+
+    .hazard-icon {
+        font-size: 22px;
+        margin-bottom: 12px;
+    }
+
+    .hazard h4 {
+        font-size: 13px;
+        margin-bottom: 8px;
+    }
+
+    .bar {
+        height: 5px;
+        background: #172a25;
+        border-radius: 10px;
+        overflow: hidden;
+        margin: 8px 0;
+    }
+
+    .fill {
+        height: 100%;
+        border-radius: 10px;
+    }
+
+    .flood { width: 72%; background: #e9aa3b; }
+    .fire { width: 43%; background: #e87845; }
+    .pollution { width: 81%; background: #e95757; }
+    .storm { width: 25%; background: #42d987; }
+
+    .risk-text {
+        font-size: 11px;
+        color: #789087;
+    }
+
+    /* AI */
+    .ai-panel {
+        margin-top: 20px;
+        background: #101f1a;
+        border: 1px solid #28503d;
+        border-radius: 16px;
+        padding: 20px;
+    }
+
+    .ai-title {
+        color: #4bea83;
+        font-size: 13px;
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+
+    .ai-panel p {
+        color: #9cb1aa;
+        line-height: 1.6;
+        font-size: 13px;
+    }
+
+    .alert {
+        padding: 13px;
+        border-radius: 10px;
+        background: #171d18;
+        border-left: 3px solid #eab13d;
+        margin-bottom: 10px;
+    }
+
+    .alert strong {
+        display: block;
+        font-size: 12px;
+        margin-bottom: 4px;
+    }
+
+    .alert span {
+        color: #778d85;
+        font-size: 11px;
+    }
+
+    /* RESPONSIVE */
+    @media(max-width: 1000px) {
+        .sidebar {
+            width: 70px;
+        }
+
+        .logo h2,
+        .nav-item span,
+        .nav-title,
+        .status {
+            display: none;
+        }
+
+        .main {
+            margin-left: 70px;
+            width: calc(100% - 70px);
+        }
+
+        .grid {
+            grid-template-columns: 1fr;
+        }
+
+        .hazards {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media(max-width: 600px) {
+        .main {
+            padding: 15px;
+        }
+
+        .hero {
+            padding: 20px;
+        }
+
+        .hero h1 {
+            font-size: 21px;
+        }
+
+        .hazards {
+            grid-template-columns: 1fr;
+        }
+
+        .top-actions .pill {
+            display: none;
+        }
+    }
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+
+        <div class="logo">
+            <div class="logo-icon">E</div>
+            <h2>Eco<span>Shield</span></h2>
+        </div>
+
+        <div class="nav-title">Monitor</div>
+
+        <div class="nav-item active">◉ <span>Overview</span></div>
+        <div class="nav-item">⌁ <span>Live Map</span></div>
+        <div class="nav-item">⚠ <span>Alerts</span></div>
+        <div class="nav-item">◌ <span>Forecasts</span></div>
+
+        <div class="nav-title">Intelligence</div>
+
+        <div class="nav-item">✦ <span>AI Insights</span></div>
+        <div class="nav-item">▣ <span>Reports</span></div>
+
+        <div class="nav-title">System</div>
+
+        <div class="nav-item">⚙ <span>Settings</span></div>
+
+        <div class="status">
+            <span class="dot"></span>
+            All systems operational
+        </div>
+
+    </aside>
+
+
+    <!-- MAIN -->
+    <main class="main">
+
+        <!-- TOP BAR -->
+        <div class="topbar">
+
+            <div class="location">
+                Monitoring location<br>
+                <strong> Ludhiana, Punjab, India</strong>
+            </div>
+
+            <div class="top-actions">
+                <div class="pill">● Live data</div>
+                <div class="pill" id="time">16:21 IST</div>
+                <div class="avatar">DS</div>
+            </div>
+
+        </div>
+
+
+        <!-- HERO -->
+        <section class="hero">
+
+            <div>
+                <div class="ai-badge">✦ AI ENVIRONMENTAL INTELLIGENCE</div>
+
+                <h1>Environmental Risk Command Center</h1>
+
+                <p>
+                    Real-time monitoring of floods, forest fires,
+                    pollution and extreme weather events across India.
+                    AI analyzes multiple signals to provide early warnings
+                    and actionable intelligence.
+                </p>
+            </div>
+
+        </section>
+
+
+        <!-- MAIN GRID -->
+        <div class="grid">
+
+            <!-- MAP -->
+            <div class="card">
+
+                <div class="card-header">
+                    <h3>Live Environmental Map</h3>
+                    <span class="muted">Updated 2 min ago</span>
+                </div>
+
+                <div class="map">
+
+                    <div class="map-grid"></div>
+
+                    <div class="hotspot red h1"></div>
+                    <div class="hotspot orange h2"></div>
+                    <div class="hotspot green h3"></div>
+                    <div class="hotspot orange h4"></div>
+                    <div class="hotspot red h5"></div>
+
+                    <div class="map-legend">
+                        <div><span style="background:#ff5757"></span> Critical</div>
+                        <div><span style="background:#ffb340"></span> Warning</div>
+                        <div><span style="background:#32e879"></span> Normal</div>
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- RISK -->
+            <div class="card">
+
+                <div class="card-header">
+                    <h3>Overall Risk</h3>
+                    <span class="muted">Today</span>
+                </div>
+
+                <div class="risk-score">
+
+                    <div class="circle">
+                        <strong>68</strong>
+                        <span>/ 100</span>
+                    </div>
+
+                    <div class="risk-label">MODERATE RISK</div>
+
+                    <p class="muted" style="margin-top:10px;">
+                        +12% compared to yesterday
+                    </p>
+
+                </div>
+
+                <div class="alert">
+                    <strong>⚠ Heavy rainfall probability</strong>
+                    <span>Punjab • Next 12 hours</span>
+                </div>
+
+                <div class="alert">
+                    <strong>⚠ Air quality deterioration</strong>
+                    <span>Ludhiana • Moderate confidence</span>
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- HAZARDS -->
+        <section class="hazards">
+
+            <div class="hazard">
+                <div class="hazard-icon">🌊</div>
+                <h4>Flood Risk</h4>
+                <div class="bar"><div class="fill flood"></div></div>
+                <span class="risk-text">72% — Elevated</span>
+            </div>
+
+            <div class="hazard">
+                <div class="hazard-icon">🔥</div>
+                <h4>Forest Fire</h4>
+                <div class="bar"><div class="fill fire"></div></div>
+                <span class="risk-text">43% — Moderate</span>
+            </div>
+
+            <div class="hazard">
+                <div class="hazard-icon">🏭</div>
+                <h4>Air Pollution</h4>
+                <div class="bar"><div class="fill pollution"></div></div>
+                <span class="risk-text">81% — High</span>
+            </div>
+
+            <div class="hazard">
+                <div class="hazard-icon">⛈</div>
+                <h4>Extreme Weather</h4>
+                <div class="bar"><div class="fill storm"></div></div>
+                <span class="risk-text">25% — Low</span>
+            </div>
+
+        </section>
+
+
+        <!-- AI INSIGHT -->
+        <section class="ai-panel">
+
+            <div class="ai-title">✦ AI-GENERATED RISK ANALYSIS</div>
+
+            <p>
+                Current signals indicate an elevated environmental risk
+                around Punjab. Rainfall intensity is expected to increase
+                during the next 12 hours while air quality is showing a
+                deteriorating trend. Authorities should prioritize
+                low-lying areas and monitor drainage capacity.
+            </p>
+
+        </section>
+
+    </main>
+
+</div>
+
+
+<script>
+
+    // LIVE CLOCK
+    function updateTime() {
+        const now = new Date();
+
+        const time = now.toLocaleTimeString("en-IN", {
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: false,
+            timeZone: "Asia/Kolkata"
+        });
+
+        document.getElementById("time").textContent = time + " IST";
+    }
+
+    updateTime();
+    setInterval(updateTime, 1000);
+
+
+    // NAVIGATION EFFECT
+    document.querySelectorAll(".nav-item").forEach(item => {
+
+        item.addEventListener("click", () => {
+
+            document.querySelectorAll(".nav-item")
+                .forEach(i => i.classList.remove("active"));
+
+            item.classList.add("active");
+
+        });
+
+    });
+
+
+    // HOTSPOT INTERACTION
+    document.querySelectorAll(".hotspot").forEach(point => {
+
+        point.addEventListener("click", () => {
+
+            alert(
+                "Environmental event detected.\n\n" +
+                "AI confidence: 87%\n" +
+                "Recommended action: Monitor affected region."
+            );
+
+        });
+
+    });
+
+</script>
+
+</body>
+</html>
