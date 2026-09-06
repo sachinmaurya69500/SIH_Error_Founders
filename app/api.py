@@ -101,7 +101,7 @@ async def fire_risk_endpoint(latitude: float = Query(..., ge=-90, le=90), longit
     return success(fire_risk.score(temperature, humidity, wind, precipitation, hotspots, confidence, frp), "EcoShield risk engine")
 
 @router.get("/pollution", tags=["pollution"], summary="Get CPCB observations with Open-Meteo air-quality fallback")
-async def pollution(limit: int = Query(100, ge=1, le=1000), latitude: float = Query(28.6139, ge=6, le=37.8), longitude: float = Query(77.209, ge=67, le=98.5)):
+async def pollution(limit: int = Query(100, ge=1, le=1000), latitude: float = Query(28.6139, ge=-90, le=90), longitude: float = Query(77.209, ge=-180, le=180)):
     try:
         return success(await cpcb.observations(limit), "data.gov.in CPCB")
     except Exception as cpcb_exc:

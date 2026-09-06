@@ -30,7 +30,8 @@ class AIBriefingRequest(BaseModel):
     weather: dict = {}
     rainfall: dict = {}
     fire: dict = {}
-    pollution: dict = {}
+    pollution: dict | list = {}
+    flood: dict = {}
     risk: dict = {}
 
 class FireAnalysisRequest(BaseModel):
