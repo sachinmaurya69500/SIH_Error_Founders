@@ -10,6 +10,9 @@ async def get_json(url: str, *, params: dict | None = None, headers: dict | None
             return payload if isinstance(payload, dict) else {}
     except httpx.TimeoutException as exc:
         raise RuntimeError("Upstream request timed out") from exc
+    except httpx.HTTPStatusError as exc:
+        detail = exc.response.text[:200].replace("\n", " ").strip()
+        raise RuntimeError(f"Upstream request returned HTTP {exc.response.status_code}: {detail}") from exc
     except (httpx.HTTPError, ValueError) as exc:
         raise RuntimeError("Upstream provider returned an invalid response") from exc
 
@@ -21,5 +24,8 @@ async def get_payload(url: str, *, params: dict | None = None, headers: dict | N
             return response.json()
     except httpx.TimeoutException as exc:
         raise RuntimeError("Upstream request timed out") from exc
+    except httpx.HTTPStatusError as exc:
+        detail = exc.response.text[:200].replace("\n", " ").strip()
+        raise RuntimeError(f"Upstream request returned HTTP {exc.response.status_code}: {detail}") from exc
     except (httpx.HTTPError, ValueError) as exc:
         raise RuntimeError("Upstream provider returned an invalid response") from exc

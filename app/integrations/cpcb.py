@@ -3,7 +3,10 @@ from app.core.http import get_json
 
 async def observations(limit: int = 100) -> list[dict]:
     if not settings.data_gov_api_key: raise RuntimeError("CPCB data.gov.in is not configured")
-    payload = await get_json("https://api.data.gov.in/resource/aqi-real-time-data", params={"api-key": settings.data_gov_api_key, "format": "json", "limit": min(limit, 1000)})
+    payload = await get_json(
+        f"https://api.data.gov.in/resource/{settings.data_gov_resource_id}",
+        params={"api-key": settings.data_gov_api_key, "format": "json", "offset": 0, "limit": min(limit, 1000)},
+    )
     records = payload.get("records", [])
     def value(row, *names):
         for name in names:

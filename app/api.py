@@ -4,6 +4,7 @@ from fastapi import APIRouter, HTTPException, Query
 from pydantic import ValidationError
 from app.core.responses import error, success
 from app.integrations import open_meteo, nasa_firms, cpcb, nasa_power, earth_engine
+from app.integrations.health import provider_checks
 from app.ai import gemini
 from app.risk import flood_risk, fire_risk, pollution_risk, overall_risk
 from app.schemas import FloodDetectRequest, AIBriefingRequest, FireAnalysisRequest
@@ -43,18 +44,12 @@ def _india_geometry(geometry: dict[str, Any]) -> None:
 async def health():
     return success({"status": "ok", "environment": __import__("app.core.config", fromlist=["settings"]).settings.app_env}, "EcoShield")
 
-@router.get("/health/providers", tags=["system"], summary="Show provider configuration and delivery readiness without exposing secrets")
+@router.get("/health/providers", tags=["system"], summary="Run live provider connectivity checks without exposing secrets")
 async def provider_health():
     from app.core.config import settings
-    import importlib.util
-    providers = {
-        "Open-Meteo": {"configured": True, "status": "READY", "reason": "No API key is required."},
-        "NASA FIRMS": {"configured": bool(settings.nasa_firms_map_key), "status": "READY" if settings.nasa_firms_map_key else "BLOCKED", "reason": "" if settings.nasa_firms_map_key else "NASA_FIRMS_MAP_KEY is missing."},
-        "CPCB/data.gov.in": {"configured": bool(settings.data_gov_api_key), "status": "READY" if settings.data_gov_api_key else "BLOCKED", "reason": "" if settings.data_gov_api_key else "DATA_GOV_API_KEY is missing."},
-        "Google Gemini": {"configured": bool(settings.gemini_api_key), "status": "READY" if settings.gemini_api_key else "BLOCKED", "reason": "" if settings.gemini_api_key else "GEMINI_API_KEY is missing."},
-        "Google Earth Engine": {"configured": bool(settings.gee_project_id and settings.gee_service_account_email and settings.gee_private_key), "dependency_installed": importlib.util.find_spec("ee") is not None, "status": "READY" if settings.gee_project_id and settings.gee_service_account_email and settings.gee_private_key and importlib.util.find_spec("ee") else "BLOCKED", "reason": "" if settings.gee_project_id and settings.gee_service_account_email and settings.gee_private_key and importlib.util.find_spec("ee") else "GEE credentials or earthengine-api dependency is missing."},
-        "PostgreSQL": {"configured": bool(settings.database_url), "status": "READY" if settings.database_url else "OPTIONAL", "reason": "Historical persistence is disabled until DATABASE_URL is set." if not settings.database_url else ""},
-    }
+    providers = {"Open-Meteo": {"configured": True, "status": "READY", "reason": "No API key is required."}}
+    providers.update(await provider_checks())
+    providers["PostgreSQL"] = {"configured": bool(settings.database_url), "status": "READY" if settings.database_url else "OPTIONAL", "reason": "Historical persistence is disabled until DATABASE_URL is set." if not settings.database_url else ""}
     return success(providers, "EcoShield provider diagnostics")
 
 @router.post("/ai/briefing", tags=["ai"], summary="Generate a Gemini briefing from verified environmental observations")

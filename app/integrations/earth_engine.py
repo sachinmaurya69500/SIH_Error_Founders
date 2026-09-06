@@ -12,7 +12,10 @@ def _initialize():
         raise RuntimeError("Earth Engine dependency is not installed") from exc
     if not (settings.gee_project_id and settings.gee_service_account_email and settings.gee_private_key):
         raise RuntimeError("Google Earth Engine is not configured")
-    credentials = ee.ServiceAccountCredentials(settings.gee_service_account_email, key_data=settings.gee_private_key.replace("\\n", "\n"))
+    private_key = settings.gee_private_key.replace("\\n", "\n")
+    if "BEGIN PRIVATE KEY" not in private_key or "END PRIVATE KEY" not in private_key:
+        raise RuntimeError("GEE_PRIVATE_KEY is not a valid PEM private key; copy the private_key value from the service-account JSON")
+    credentials = ee.ServiceAccountCredentials(settings.gee_service_account_email, key_data=private_key)
     ee.Initialize(credentials, project=settings.gee_project_id)
     return ee
 

@@ -26,7 +26,7 @@ class FloodDetectRequest(BaseModel):
         return value
 
 class AIBriefingRequest(BaseModel):
-    location: str = "India"
+    location: str | dict = "India"
     weather: dict = {}
     rainfall: dict = {}
     fire: dict = {}

@@ -17,4 +17,13 @@ async def generate(prompt: str) -> str:
         raise RuntimeError("Gemini returned an invalid response") from exc
 
 async def environmental_briefing(context: dict) -> str:
-    return await generate("You are EcoShield, an India-focused environmental analyst. Use only the verified data below. Do not invent measurements, claim official warnings, or change the supplied risk scores. Write a concise briefing with: summary, key factors, practical precautions, and data limitations. Mention the source timestamps when present.\n\nVERIFIED DATA:\n" + json.dumps(context, ensure_ascii=False, default=str))
+    return await generate("""You are EcoShield, an India-focused environmental analyst. Use only the verified data below.
+The location object is the user's current GPS location; make clear that weather and local conditions refer to it.
+Summarize current weather, rainfall, air quality, active fire hotspots, risk scores, and practical precautions.
+For active flooded areas, report only locations explicitly present in verified flood observations or a completed Earth Engine result.
+If no verified active flood-area data is supplied, say exactly that it is unavailable and distinguish rainfall-based flood risk from confirmed flooding.
+Never invent measurements, locations, timestamps, official warnings, or change supplied risk scores. Mention source timestamps and data limitations.
+Keep the response concise with headings: Current conditions, Flood status, Other signals, Precautions, Limitations.
+
+VERIFIED DATA:
+""" + json.dumps(context, ensure_ascii=False, default=str))
