@@ -3,7 +3,7 @@ from typing import Any
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import ValidationError
 from app.core.responses import error, success
-from app.integrations import open_meteo, nasa_firms, cpcb, nasa_power, earth_engine
+from app.integrations import open_meteo, open_meteo_air, nasa_firms, cpcb, nasa_power, earth_engine
 from app.integrations.health import provider_checks
 from app.ai import gemini
 from app.risk import flood_risk, fire_risk, pollution_risk, overall_risk
@@ -100,10 +100,16 @@ async def fire_risk_endpoint(latitude: float = Query(..., ge=-90, le=90), longit
     _coordinates(latitude, longitude)
     return success(fire_risk.score(temperature, humidity, wind, precipitation, hotspots, confidence, frp), "EcoShield risk engine")
 
-@router.get("/pollution", tags=["pollution"], summary="Get CPCB/data.gov.in observations")
-async def pollution(limit: int = Query(100, ge=1, le=1000)):
-    try: return success(await cpcb.observations(limit), "data.gov.in CPCB")
-    except Exception as exc: return provider_error(exc)
+@router.get("/pollution", tags=["pollution"], summary="Get CPCB observations with Open-Meteo air-quality fallback")
+async def pollution(limit: int = Query(100, ge=1, le=1000), latitude: float = Query(28.6139, ge=6, le=37.8), longitude: float = Query(77.209, ge=67, le=98.5)):
+    try:
+        return success(await cpcb.observations(limit), "data.gov.in CPCB")
+    except Exception as cpcb_exc:
+        try:
+            records = await open_meteo_air.current(latitude, longitude)
+            return success(records, "Open-Meteo/CAMS air-quality fallback", fallback=True, cpcb_error=str(cpcb_exc))
+        except Exception as fallback_exc:
+            return provider_error(RuntimeError(f"CPCB failed ({cpcb_exc}); Open-Meteo fallback failed ({fallback_exc})"))
 
 @router.get("/pollution/risk", tags=["risk"], summary="Calculate pollution risk")
 async def pollution_risk_endpoint(aqi: float | None = None, pm2_5: float | None = None, pm10: float | None = None, no2: float | None = None, so2: float | None = None, o3: float | None = None, co: float | None = None):

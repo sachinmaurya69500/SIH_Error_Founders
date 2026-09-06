@@ -109,7 +109,7 @@ async function loadLiveData(location = LOCATION) {
       `/rainfall?latitude=${location.latitude}&longitude=${location.longitude}`,
     ),
     get("/fire/hotspots?area=india&days=1"),
-    get("/pollution?limit=20"),
+    get(`/pollution?limit=20&latitude=${location.latitude}&longitude=${location.longitude}`),
   ]);
   const current = weather?.current || {};
   const flood = await get(
