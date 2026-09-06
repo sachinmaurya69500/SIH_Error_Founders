@@ -13,11 +13,11 @@ class Settings(BaseSettings):
     gee_export_bucket: str | None = None
     gee_export_folder: str = "EcoShield"
     gemini_api_key: str | None = None
-    gemini_model: str = "gemini-3.7-flash"
+    gemini_model: str = "gemini-2.5-flash"
     gemini_base_url: str = "https://generativelanguage.googleapis.com/v1beta"
     open_meteo_base_url: str = "https://api.open-meteo.com"
     nasa_power_base_url: str = "https://power.larc.nasa.gov/api"
-    cors_origins_raw: str = Field(default="http://localhost:3000,http://localhost:5173", alias="CORS_ORIGINS")
+    cors_origins_raw: str = Field(default="http://localhost:3000,http://localhost:5173,http://127.0.0.1:3000,http://127.0.0.1:5173", alias="CORS_ORIGINS")
     risk_flood_weight: float = 0.40
     risk_fire_weight: float = 0.30
     risk_pollution_weight: float = 0.30

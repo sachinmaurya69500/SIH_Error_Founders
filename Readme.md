@@ -30,8 +30,8 @@ Once it is running, the API documentation is available at:
 
 The location-based endpoints accept coordinates within the following approximate bounding box:
 
-- Latitude: 6.5°N to 37.5°N
-- Longitude: 68°E to 97.5°E
+- Latitude: 6.0°N to 37.8°N
+- Longitude: 67°E to 98.5°E
 
 This keeps the project focused on India. Pollution data comes from India’s CPCB/data.gov.in service, and NASA FIRMS hotspot requests default to India.
 
@@ -51,6 +51,7 @@ Available endpoints include:
 
 ```text
 GET  /api/health
+GET  /api/health/providers
 GET  /api/weather?latitude=28.61&longitude=77.21&forecast_days=7
 GET  /api/rainfall?latitude=28.61&longitude=77.21
 GET  /api/fire/hotspots?area=india&days=1
@@ -95,7 +96,13 @@ npm install
 npm run dev
 ```
 
-The frontend uses `/api` by default. To point it at a separately running backend during development, copy `frontend/.env.example` to `frontend/.env` and set `VITE_API_BASE_URL=http://localhost:8000/api`.
+Run the backend in a second terminal before opening the frontend:
+
+```bash
+uvicorn main:app --reload --port 8000
+```
+
+During local Vite development, API requests automatically use `http://localhost:8000/api`. In the combined Vercel deployment, they use the same-domain `/api` routes. If the backend runs elsewhere, copy `frontend/.env.example` to `frontend/.env` and set `VITE_API_BASE_URL` to that backend’s `/api` URL.
 
 Connect the repository to Vercel and set the environment variables in the project settings. The included `vercel.json` runs the frontend build and publishes `frontend/dist`, while Vercel detects `main.py` as the FastAPI entry point.
 
