@@ -7,6 +7,7 @@ class Settings(BaseSettings):
     database_url: str | None = None
     nasa_firms_map_key: str | None = None
     data_gov_api_key: str | None = None
+    data_gov_resource_id: str = "3b01bcb8-0b14-4abf-b6f2-c1bfd384ba69"
     gee_project_id: str | None = None
     gee_service_account_email: str | None = None
     gee_private_key: str | None = None

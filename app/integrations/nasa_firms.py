@@ -3,6 +3,10 @@ from app.core.config import settings
 async def hotspots(area: str = "world", days: int = 1, source: str = "VIIRS_SNPP_NRT") -> list[dict]:
     if not settings.nasa_firms_map_key: raise RuntimeError("NASA FIRMS is not configured")
     import csv, io, httpx
+    # The area endpoint only accepts a bounding box in the form
+    # west,south,east,north; it does not accept a country name such as "india".
+    if area.strip().lower() == "india":
+        area = "67.0,6.0,98.5,37.8"
     url = f"https://firms.modaps.eosdis.nasa.gov/api/area/csv/{settings.nasa_firms_map_key}/{source}/{area}/{min(max(days, 1), 10)}"
     async with httpx.AsyncClient(timeout=settings.request_timeout_seconds) as client:
         response = await client.get(url)
