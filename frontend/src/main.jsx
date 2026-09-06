@@ -7,6 +7,7 @@ import {
   Popup,
   LayersControl,
   LayerGroup,
+  useMap,
   useMapEvents,
 } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
@@ -273,7 +274,16 @@ function ClickWeather({ onSelect }) {
   useMapEvents({ click: (event) => onSelect(event.latlng) });
   return null;
 }
-function InteractiveIndiaMap({ hotspots = [], weather, states = [] }) {
+function FollowLocation({ location }) {
+  const map = useMap();
+  useEffect(() => {
+    if (location?.latitude && location?.longitude) {
+      map.setView([location.latitude, location.longitude], Math.max(map.getZoom(), 5), { animate: true });
+    }
+  }, [location?.latitude, location?.longitude, map]);
+  return null;
+}
+function InteractiveIndiaMap({ hotspots = [], weather, states = [], location = LOCATION }) {
   const liveHotspots = hotspots.filter(
     (x) =>
       Number.isFinite(Number(x.latitude)) &&
@@ -293,13 +303,14 @@ function InteractiveIndiaMap({ hotspots = [], weather, states = [] }) {
   return (
     <div className="interactive-map-wrap">
       <MapContainer
-        center={[22.5, 79]}
+        center={[location.latitude, location.longitude]}
         zoom={5}
         minZoom={4}
         maxZoom={12}
         scrollWheelZoom
         className="interactive-map"
       >
+        <FollowLocation location={location} />
         <ClickWeather onSelect={choosePoint} />
         <LayersControl position="topright">
           <LayersControl.BaseLayer checked name="OpenStreetMap">
@@ -366,10 +377,10 @@ function InteractiveIndiaMap({ hotspots = [], weather, states = [] }) {
               ))}
             </LayerGroup>
           </LayersControl.Overlay>
-          <LayersControl.Overlay checked name="New Delhi weather">
+          <LayersControl.Overlay checked name="Current device location">
             <LayerGroup>
               <CircleMarker
-                center={[LOCATION.latitude, LOCATION.longitude]}
+                center={[location.latitude, location.longitude]}
                 radius={9}
                 pathOptions={{
                   color: "#63d8b5",
@@ -378,7 +389,9 @@ function InteractiveIndiaMap({ hotspots = [], weather, states = [] }) {
                 }}
               >
                 <Popup>
-                  <strong>New Delhi</strong>
+                  <strong>Current device location</strong>
+                  <br />
+                  {location.latitude.toFixed(4)}°N, {location.longitude.toFixed(4)}°E
                   <br />
                   Temperature: {weather?.temperature_2m ?? "—"} °C
                   <br />
@@ -1229,6 +1242,7 @@ function AIAssistant({ active, weather, rainfall, hotspots, risk, alerts }) {
 
 function Workspace({
   active,
+  location,
   weather,
   rainfall,
   hotspots,
@@ -1301,8 +1315,8 @@ function Workspace({
             >
               <span /> State weather forecasts
             </button>
-            <button onClick={() => toggleMapLayer("New Delhi weather")}>
-              <span /> Weather · Current location
+            <button onClick={() => toggleMapLayer("Current device location")}>
+              <span /> Weather · Current device location
             </button>
             <button onClick={() => toggleMapLayer("Fire hotspots")}>
               <span /> NASA FIRMS hotspots
@@ -1346,7 +1360,7 @@ function Workspace({
             </div>
             <div>
               <small>Coordinates</small>
-              <b>28.61, 77.21</b>
+              <b>{location?.latitude?.toFixed(4)}, {location?.longitude?.toFixed(4)}</b>
             </div>
           </div>
         </DataPanel>
@@ -2139,15 +2153,19 @@ function LegacyApp() {
       setLocation(current);
       refresh(current);
     };
-    if (settings.locationMode === "device" && navigator.geolocation)
-      navigator.geolocation.getCurrentPosition(
+    let watchId;
+    if (settings.locationMode === "device" && navigator.geolocation) {
+      watchId = navigator.geolocation.watchPosition(
         useLocation,
         () => refresh(LOCATION),
-        { enableHighAccuracy: false, timeout: 8000, maximumAge: 300000 },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 },
       );
-    else refresh(LOCATION);
+    } else refresh(LOCATION);
     const timer = setInterval(() => refresh(), Number(settings.refreshMinutes) * 60000);
-    return () => clearInterval(timer);
+    return () => {
+      clearInterval(timer);
+      if (watchId !== undefined) navigator.geolocation?.clearWatch(watchId);
+    };
   }, [settings.locationMode, settings.refreshMinutes]);
   const updateSettings = (changes) => {
     setSettings((current) => ({ ...current, ...changes }));
@@ -2326,7 +2344,7 @@ function LegacyApp() {
             <p>
               {active === "Overview"
                 ? "Here’s the latest environmental picture across India."
-                : "Environmental intelligence for India, updated from connected providers."}
+                : "Environmental intelligence for India, updated from connected providers."} · Monitoring {location.latitude.toFixed(3)}°N, {location.longitude.toFixed(3)}°E
             </p>
           </div>
           <button className="refresh" onClick={() => window.location.reload()}>
@@ -2335,6 +2353,7 @@ function LegacyApp() {
         </div>
         <Workspace
           active={active}
+          location={location}
           weather={weather}
           rainfall={rainfall}
           hotspots={hotspots}
